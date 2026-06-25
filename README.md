@@ -1,31 +1,40 @@
 # EMS - Employee Management System
- 
+
 ## Overview
 
-EMS (Employee Management System) is a web-based application developed using ASP.NET Core MVC to streamline employee management processes within an organization. The system provides features for employee administration, attendance tracking, leave management, role-based authorization, notifications, and audit logging.
+EMS (Employee Management System) is a full-featured enterprise web application developed using **ASP.NET Core MVC**. The system streamlines employee management by providing modules for employee administration, attendance tracking, leave management, role-based authorization, audit logging, and real-time notifications.
+
+The project follows a clean layered architecture and demonstrates best practices in enterprise application development using .NET technologies.
+
+---
 
 ## Features
 
-* Employee Management
+* Employee Management (CRUD)
 * Department Management
 * Attendance Tracking
 * Leave Request Management
+* User & Role Management
 * Role-Based Authorization
-* User Authentication & Authorization using ASP.NET Core Identity
+* Authentication & Authorization using ASP.NET Core Identity
 * Real-Time Notifications using SignalR
 * Audit Logging
 * Dashboard & Analytics
+* Google Maps Integration for Company Locations
 * Responsive User Interface
+
+---
 
 ## Technologies Used
 
 ### Backend
 
-* ASP.NET Core MVC
+* ASP.NET Core MVC (.NET 8)
 * C#
 * Entity Framework Core
 * ASP.NET Core Identity
 * SignalR
+* AutoMapper
 
 ### Database
 
@@ -39,13 +48,17 @@ EMS (Employee Management System) is a web-based application developed using ASP.
 * JavaScript
 * jQuery
 
-## Architecture
+---
 
-The project follows a layered architecture:
+## Project Architecture
 
-* EMS.PL (Presentation Layer)
-* EMS.BLL (Business Logic Layer)
-* EMS.DAL (Data Access Layer)
+The project follows a **3-Layer Architecture**:
+
+* **EMS.PL** – Presentation Layer
+* **EMS.BLL** – Business Logic Layer
+* **EMS.DAL** – Data Access Layer
+
+---
 
 ## Getting Started
 
@@ -57,44 +70,109 @@ The project follows a layered architecture:
 
 ### Installation
 
-1. Clone the repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/AbdelrahmanYehiaGharib23/EMS-Employee-Management-System.git
 ```
 
-2. Update the connection string in:
+Update the connection string inside:
 
 ```text
 appsettings.json
 ```
 
-3. Apply database migrations
+Apply database migrations:
 
-```bash
+```powershell
 Update-Database
 ```
 
-4. Run the application
+Run the project:
 
 ```bash
 dotnet run
 ```
 
-## Screenshots
+---
 
-Screenshots will be added soon.
+# Screenshots
+
+## Login
+
+![Login](docs/screenshots/Login.png)
+
+---
+
+## Dashboard
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+---
+
+## Employee Management
+
+![Employee Management](docs/screenshots/EmployeeManagement.png)
+
+---
+
+## Department Management
+
+![Department Management](docs/screenshots/DepartmentManagement.png)
+
+---
+
+## Attendance Management
+
+![Attendance](docs/screenshots/Attendance.png)
+
+---
+
+## User Management
+
+![Users](docs/screenshots/Users.png)
+
+---
+
+## Roles Management
+
+![Roles](docs/screenshots/Roles.png)
+
+---
+
+## Company Locations
+
+![Company Location](docs/screenshots/CompanyLocation.png)
+
+---
+
+## User Profile
+
+![Profile](docs/screenshots/Profile.png)
+
+---
+
+## Audit Trail
+
+![Audit Trail](docs/screenshots/AuditTrail.png)
+
+---
 
 ## Future Enhancements
 
 * Email Notifications
 * Advanced Reporting
 * Payroll Management
-* Performance Evaluation Module
+* Performance Evaluation
+* REST API Integration
+* Docker Support
+
+---
 
 ## Author
 
-Abdelrahman Yehia Gharib
+**Abdelrahman Yehia Gharib**
 
 GitHub:
 https://github.com/AbdelrahmanYehiaGharib23
+

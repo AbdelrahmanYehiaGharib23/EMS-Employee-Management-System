@@ -1,5 +1,5 @@
 # EMS - Employee Management System
-
+ 
 ## Overview
 
 EMS (Employee Management System) is a web-based application developed using ASP.NET Core MVC to streamline employee management processes within an organization. The system provides features for employee administration, attendance tracking, leave management, role-based authorization, notifications, and audit logging.

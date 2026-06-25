@@ -1,0 +1,112 @@
+@media (prefers-reduced-motion: no-preference) {
+    .motion-ready .page-content > * {
+        transform-origin: top center;
+        will-change: transform, opacity, filter;
+    }
+
+    .motion-ready .card,
+    .motion-ready .audit-panel,
+    .motion-ready .audit-metric,
+    .motion-ready .dashboard-card,
+    .motion-ready .stat-card,
+    .motion-ready .chart-card,
+    .motion-ready .content-card,
+    .motion-ready .employee-card,
+    .motion-ready .table-dark-theme,
+    .motion-ready .audit-table-panel {
+        transform-origin: top center;
+        will-change: transform, opacity, filter, box-shadow;
+    }
+
+    .motion-ready .btn,
+    .motion-ready button,
+    .motion-ready .nav-link,
+    .motion-ready input,
+    .motion-ready select,
+    .motion-ready textarea {
+        transition:
+            border-color .18s ease,
+            background-color .18s ease,
+            color .18s ease,
+            box-shadow .18s ease,
+            transform .2s cubic-bezier(.22, 1, .36, 1);
+    }
+}
+
+.motion-ready .ui-lift {
+    position: relative;
+    overflow: hidden;
+}
+
+.motion-ready .ui-lift::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .075), transparent 42%);
+    opacity: 0;
+    transform: translateY(-18%);
+    transition: opacity .24s ease, transform .46s cubic-bezier(.22, 1, .36, 1);
+}
+
+.motion-ready .ui-lift:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.motion-ready .btn:hover,
+.motion-ready button:not(.btn-close):hover {
+    transform: translateY(-1px);
+}
+
+.motion-ready .btn:active,
+.motion-ready button:not(.btn-close):active {
+    transform: translateY(0) scale(.985);
+}
+
+.motion-ready #sidebar.app-sidebar .nav-link,
+.motion-ready #sidebar.app-sidebar .nav-link:hover,
+.motion-ready #sidebar.app-sidebar .nav-link:active {
+    transform: none !important;
+}
+
+.motion-ready .form-control:focus,
+.motion-ready .form-select:focus,
+.motion-ready textarea:focus {
+    transform: translateY(-1px);
+}
+
+.motion-ready .table tbody tr,
+.motion-ready table tbody tr {
+    transition: background-color .18s ease, transform .2s cubic-bezier(.22, 1, .36, 1);
+}
+
+.motion-ready .table tbody tr:hover,
+.motion-ready table tbody tr:hover {
+    transform: translateY(-1px);
+}
+
+.motion-ready #notifDropdown.card.show {
+    transform-origin: top right;
+}
+
+.motion-ready .modal.fade .modal-dialog {
+    transform: translateY(-18px) scale(.975);
+    transform-origin: top center;
+    transition: transform .24s cubic-bezier(.22, 1, .36, 1), opacity .24s ease-out;
+}
+
+.motion-ready .modal.show .modal-dialog {
+    transform: translateY(0) scale(1);
+}
+
+.motion-route-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, .28), rgba(15, 23, 42, .08)),
+        rgba(2, 6, 23, .18);
+}

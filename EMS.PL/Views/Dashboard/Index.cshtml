@@ -1,0 +1,516 @@
+@using EMS.BLL.Models.Dto.DashboardDto.DashboardAnalyticsDto
+@using EMS.DAL.Entities.Requests
+@model DashboardViewDto
+@{
+    ViewBag.Title = "Dashboard";
+    var isHrDashboard = ViewBag.IsHR is bool hrValue ? hrValue : User.IsInRole("HR");
+    var pendingProfileRequests = Convert.ToInt32(ViewBag.PendingProfileRequests ?? 0);
+    var pendingLeaveRequests = Convert.ToInt32(ViewBag.PendingLeaveRequests ?? 0);
+    var completedProfileRequests = Convert.ToInt32(ViewBag.CompletedProfileRequests ?? 0);
+    var recentProfileRequests = ViewBag.RecentProfileRequests as IEnumerable<EmployeeProfileRequest> ?? Enumerable.Empty<EmployeeProfileRequest>();
+}
+
+<style>
+    .dashboard-shell {
+        max-width: 1320px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .dashboard-title {
+        margin: 0;
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: #f8fafc;
+    }
+
+    .dashboard-subtitle {
+        margin: .25rem 0 0;
+        color: #94a3b8;
+    }
+
+    .dashboard-stamp {
+        color: #cbd5e1;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: rgba(15, 23, 42, .7);
+        border-radius: .5rem;
+        padding: .55rem .75rem;
+        font-size: .86rem;
+        white-space: nowrap;
+    }
+
+    .dashboard-kpis {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .hr-workflow {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .hr-card {
+        border: 1px solid rgba(148, 163, 184, .14);
+        border-radius: .55rem;
+        background: linear-gradient(180deg, rgba(15, 23, 42, .98), rgba(2, 6, 23, .55));
+        padding: 1rem;
+    }
+
+    .hr-card-label {
+        color: #9ca3af;
+        font-size: .78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .hr-card-value {
+        color: #f8fafc;
+        font-size: 1.75rem;
+        font-weight: 850;
+        margin-top: .45rem;
+    }
+
+    .hr-card-note {
+        color: #94a3b8;
+        font-size: .82rem;
+        margin-top: .35rem;
+    }
+
+    .request-status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: .18rem .5rem;
+        border-radius: 999px;
+        font-size: .76rem;
+        font-weight: 800;
+        color: #dbeafe;
+        background: rgba(37, 99, 235, .16);
+        border: 1px solid rgba(96, 165, 250, .24);
+    }
+
+    .request-status.pending {
+        color: #fde68a;
+        background: rgba(245, 158, 11, .14);
+        border-color: rgba(245, 158, 11, .26);
+    }
+
+    .request-status.completed {
+        color: #bbf7d0;
+        background: rgba(34, 197, 94, .12);
+        border-color: rgba(34, 197, 94, .24);
+    }
+
+    .dashboard-kpi {
+        position: relative;
+        overflow: hidden;
+        min-height: 118px;
+        border: 1px solid rgba(148, 163, 184, .14);
+        border-radius: .55rem;
+        background: linear-gradient(180deg, rgba(17, 24, 39, .98), rgba(15, 23, 42, .96));
+        padding: 1rem;
+    }
+
+    .dashboard-kpi::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: var(--kpi-color, #38bdf8);
+    }
+
+    .kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .75rem;
+        margin-bottom: .75rem;
+    }
+
+    .kpi-label {
+        color: #9ca3af;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .kpi-icon {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: .5rem;
+        color: #f8fafc;
+        background: color-mix(in srgb, var(--kpi-color, #38bdf8) 22%, transparent);
+    }
+
+    .kpi-value {
+        color: #f8fafc;
+        font-size: 1.55rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .kpi-note {
+        margin-top: .35rem;
+        color: #94a3b8;
+        font-size: .82rem;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .dashboard-panel {
+        grid-column: span 6;
+        border: 1px solid rgba(148, 163, 184, .14);
+        border-radius: .55rem;
+        background: linear-gradient(180deg, rgba(17, 24, 39, .96), rgba(15, 23, 42, .94));
+        padding: 1rem;
+        min-height: 360px;
+    }
+
+    .dashboard-panel.compact {
+        min-height: 330px;
+    }
+
+    .dashboard-panel.wide {
+        grid-column: span 7;
+    }
+
+    .dashboard-panel.side {
+        grid-column: span 5;
+    }
+
+    .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .9rem;
+    }
+
+    .panel-title {
+        margin: 0;
+        color: #dbeafe;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .panel-caption {
+        margin: .18rem 0 0;
+        color: #94a3b8;
+        font-size: .8rem;
+    }
+
+    .panel-action {
+        border-color: rgba(148, 163, 184, .22);
+        color: #cbd5e1;
+        min-width: 38px;
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chart-frame {
+        position: relative;
+        height: 270px;
+    }
+
+    .chart-frame.donut {
+        height: 245px;
+    }
+
+    .dashboard-table {
+        margin: 0;
+        border-color: rgba(148, 163, 184, .12);
+    }
+
+    .dashboard-table thead th {
+        color: #cbd5e1;
+        background: rgba(2, 6, 23, .42);
+        border-bottom-color: rgba(148, 163, 184, .16);
+        font-size: .8rem;
+        text-transform: uppercase;
+    }
+
+    .dashboard-table tbody td {
+        color: #e5e7eb;
+        border-color: rgba(148, 163, 184, .1);
+        vertical-align: middle;
+    }
+
+    .empty-row {
+        color: #94a3b8 !important;
+        text-align: center;
+        padding: 1.25rem !important;
+    }
+
+    @@media (max-width: 1199px) {
+        .dashboard-kpis {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .hr-workflow {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .dashboard-panel,
+        .dashboard-panel.wide,
+        .dashboard-panel.side {
+            grid-column: span 12;
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .dashboard-kpis {
+            grid-template-columns: 1fr;
+        }
+
+        .hr-workflow {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-frame,
+        .chart-frame.donut {
+            height: 235px;
+        }
+    }
+</style>
+
+<div class="dashboard-shell">
+    <div class="dashboard-header">
+        <div>
+            <h2 class="dashboard-title">@(isHrDashboard ? "HR Command Center" : "Dashboard Overview")</h2>
+            <p class="dashboard-subtitle">@(isHrDashboard ? "Profile approvals, leave queues, workforce movement, and attendance signals." : "Operational snapshot for employees, departments, salaries, and attendance.")</p>
+        </div>
+        <div class="dashboard-stamp">
+            <i class="fa-regular fa-clock me-1"></i>
+            @DateTime.Now.ToString("MMM dd, yyyy - hh:mm tt")
+        </div>
+    </div>
+
+    @if (isHrDashboard)
+    {
+        <div class="hr-workflow">
+            <div class="hr-card">
+                <div class="hr-card-label">Profile Requests</div>
+                <div class="hr-card-value">@pendingProfileRequests</div>
+                <div class="hr-card-note">Pending employee profile approvals</div>
+            </div>
+            <div class="hr-card">
+                <div class="hr-card-label">Leave Queue</div>
+                <div class="hr-card-value">@pendingLeaveRequests</div>
+                <div class="hr-card-note">Pending leave requests awaiting HR action</div>
+            </div>
+            <div class="hr-card">
+                <div class="hr-card-label">Completed Profiles</div>
+                <div class="hr-card-value">@completedProfileRequests</div>
+                <div class="hr-card-note">Requests converted into employee records</div>
+            </div>
+        </div>
+    }
+
+    <div class="dashboard-kpis">
+        <div class="dashboard-kpi" style="--kpi-color:#38bdf8">
+            <div class="kpi-top">
+                <div class="kpi-label">Employees</div>
+                <span class="kpi-icon"><i class="fa-solid fa-user-tie"></i></span>
+            </div>
+            <div class="kpi-value">@String.Format("{0:N0}", Model.Stats.TotalEmployees)</div>
+            <div class="kpi-note">Active records</div>
+        </div>
+
+        <div class="dashboard-kpi" style="--kpi-color:#a78bfa">
+            <div class="kpi-top">
+                <div class="kpi-label">Departments</div>
+                <span class="kpi-icon"><i class="fa-solid fa-building"></i></span>
+            </div>
+            <div class="kpi-value">@String.Format("{0:N0}", Model.Stats.TotalDepartments)</div>
+            <div class="kpi-note">Organization units</div>
+        </div>
+
+        <div class="dashboard-kpi" style="--kpi-color:#34d399">
+            <div class="kpi-top">
+                <div class="kpi-label">New Hires</div>
+                <span class="kpi-icon"><i class="fa-solid fa-user-plus"></i></span>
+            </div>
+            <div class="kpi-value">@String.Format("{0:N0}", Model.Stats.NewEmployeesLast30Days)</div>
+            <div class="kpi-note">Last 30 days</div>
+        </div>
+
+        <div class="dashboard-kpi" style="--kpi-color:#22d3ee">
+            <div class="kpi-top">
+                <div class="kpi-label">Avg Salary</div>
+                <span class="kpi-icon"><i class="fa-solid fa-chart-line"></i></span>
+            </div>
+            <div class="kpi-value">@String.Format("{0:N2}", Model.Analytics.SalaryAnalytics.Average)</div>
+            <div class="kpi-note">Payroll average</div>
+        </div>
+
+        <div class="dashboard-kpi" style="--kpi-color:#f59e0b">
+            <div class="kpi-top">
+                <div class="kpi-label">Max Salary</div>
+                <span class="kpi-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
+            </div>
+            <div class="kpi-value">@String.Format("{0:N2}", Model.Analytics.SalaryAnalytics.Max)</div>
+            <div class="kpi-note">Highest package</div>
+        </div>
+
+        <div class="dashboard-kpi" style="--kpi-color:#fb7185">
+            <div class="kpi-top">
+                <div class="kpi-label">Min Salary</div>
+                <span class="kpi-icon"><i class="fa-solid fa-arrow-trend-down"></i></span>
+            </div>
+            <div class="kpi-value">@String.Format("{0:N2}", Model.Analytics.SalaryAnalytics.Min)</div>
+            <div class="kpi-note">Lowest package</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <section class="dashboard-panel">
+            <div class="panel-head">
+                <div>
+                    <h3 class="panel-title">Department Distribution</h3>
+                    <p class="panel-caption">Employees grouped by department</p>
+                </div>
+                <button class="btn btn-sm btn-outline-light panel-action" data-export-chart="departmentChart" title="Export department chart">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+            <div class="chart-frame">
+                <canvas id="departmentChart"></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="panel-head">
+                <div>
+                    <h3 class="panel-title">Hiring Trend</h3>
+                    <p class="panel-caption">Monthly hiring movement</p>
+                </div>
+                <button class="btn btn-sm btn-outline-light panel-action" data-export-chart="hiringChart" title="Export hiring trend">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+            <div class="chart-frame">
+                <canvas id="hiringChart"></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard-panel side compact">
+            <div class="panel-head">
+                <div>
+                    <h3 class="panel-title">Gender Distribution</h3>
+                    <p class="panel-caption">Current workforce split</p>
+                </div>
+                <button class="btn btn-sm btn-outline-light panel-action" data-export-chart="genderChart" title="Export gender distribution">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+            <div class="chart-frame donut">
+                <canvas id="genderChart"></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard-panel wide compact">
+            <div class="panel-head">
+                <div>
+                    <h3 class="panel-title">Top Present Employees</h3>
+                    <p class="panel-caption">Attendance leaders during the last 30 days</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-dark dashboard-table" id="mostPresentTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Present Days</th>
+                            <th>Late Count</th>
+                            <th>Overtime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="empty-row">Loading attendance data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        @if (isHrDashboard)
+        {
+            <section class="dashboard-panel wide compact">
+                <div class="panel-head">
+                    <div>
+                        <h3 class="panel-title">Recent Profile Requests</h3>
+                        <p class="panel-caption">Latest employee profile submissions received by HR</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-dark dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (recentProfileRequests.Any())
+                            {
+                                foreach (var request in recentProfileRequests)
+                                {
+                                    var statusClass = string.Equals(request.Status, "Pending", StringComparison.OrdinalIgnoreCase)
+                                        ? "pending"
+                                        : string.Equals(request.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" : "";
+                                    <tr>
+                                        <td>@request.Name</td>
+                                        <td>@request.Email</td>
+                                        <td>@(request.DepartmentId?.ToString() ?? "-")</td>
+                                        <td><span class="request-status @statusClass">@request.Status</span></td>
+                                        <td>@request.CreatedAt.ToLocalTime().ToString("MMM dd, hh:mm tt")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="empty-row">No profile requests yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/dashboard.js"></script>
+}

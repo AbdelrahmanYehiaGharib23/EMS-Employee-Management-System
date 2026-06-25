@@ -1,0 +1,44 @@
+@using EMS.PL.ViewModels.Identity
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+
+<div class="auth-card">
+
+    <h2 class="auth-title">Login</h2>
+
+    <form asp-action="Login" method="post" asp-controller="Account" class="auth-form">
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <input asp-for="Email" placeholder="Email" required />
+        </div>
+        <span asp-validation-for="Email" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input asp-for="Password" placeholder="Password" type="password" required />
+        </div>
+        <span asp-validation-for="Password" class="field-validation-error"></span>
+
+        <div class="checkbox-group">
+            <label>
+                <input asp-for="RememberMe" type="checkbox" />
+                <span>Remember Me</span>
+            </label>
+        </div>
+
+        <button type="submit" class="auth-btn">LOGIN</button>
+    </form>
+    <br />
+    <!-- Forget Password Link -->
+    <p class="forget-password1">
+        <a asp-action="ForgotPassword" asp-controller="Account">Forgot Password?</a>
+    </p>
+
+    <p class="switch-form">Don't have an account? <a asp-action="Register">Register Now!</a></p>
+</div>

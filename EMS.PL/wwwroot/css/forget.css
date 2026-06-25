@@ -1,0 +1,76 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f5f5;
+}
+
+.dark-mode body {
+    background-color: #1a1a1a;
+    color: #f5f5f5;
+}
+
+.forget-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6c63ff, #3f3d56);
+}
+
+.forget-container {
+    max-width: 400px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.dark-mode .forget-container {
+    background-color: #2b2b2b;
+    color: #f5f5f5;
+}
+
+.forget-container h2 {
+    font-weight: 600;
+}
+
+.forget-container button {
+    width: 100%;
+    font-weight: 500;
+}
+
+.forget-container .form-control {
+    border-radius: 8px;
+}
+
+.forget-container .alert {
+    margin-top: 15px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .forget-container {
+        transform-origin: top center;
+        animation: forgetTopDrop .72s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .forget-container .text-center,
+    .forget-container form,
+    .forget-container .alert {
+        animation: forgetTopDrop .58s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .forget-container .text-center { animation-delay: .08s; }
+    .forget-container form { animation-delay: .16s; }
+    .forget-container .alert { animation-delay: .24s; }
+}
+
+@keyframes forgetTopDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-24px) scale(.985);
+        filter: blur(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}

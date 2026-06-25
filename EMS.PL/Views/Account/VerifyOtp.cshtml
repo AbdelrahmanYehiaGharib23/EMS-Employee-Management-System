@@ -1,0 +1,35 @@
+@using EMS.BLL.Models.Dto.IdentityDto
+@model VerifyOtpDto
+@{
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+    ViewData["Title"] = "Verify OTP";
+}
+
+<div class="auth-card">
+    <div class="auth-step-icon">
+        <i class="fas fa-shield-halved"></i>
+    </div>
+
+    <h2 class="auth-title">Verify OTP</h2>
+    <p class="auth-subtitle">Use the code sent to your email to continue.</p>
+
+    <form asp-action="VerifyOtp" method="post" class="auth-form">
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <input asp-for="Email" placeholder="Email" required />
+        </div>
+        <span asp-validation-for="Email" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input asp-for="Otp" placeholder="OTP Code" required />
+        </div>
+        <span asp-validation-for="Otp" class="field-validation-error"></span>
+
+        <button type="submit" class="auth-btn">VERIFY OTP</button>
+    </form>
+
+    <p class="switch-form">Back to <a asp-action="ForgotPassword" asp-controller="Account">Forgot Password</a></p>
+</div>

@@ -1,0 +1,13 @@
+<button id="btnCheckIn" class="btn btn-primary">تجريب تسجيل الحضور (Check In)</button>
+
+<script>
+document.getElementById('btnCheckIn').addEventListener('click', () => {
+  fetch('/Attendance/CheckIn', { method: 'POST', credentials: 'include' })
+    .then(async r => {
+      const txt = await r.text();
+      console.log('status', r.status, txt);
+      alert('Status: ' + r.status + '\n' + txt);
+    })
+    .catch(e => { console.error(e); alert('Error: ' + e.message); });
+});
+</script>

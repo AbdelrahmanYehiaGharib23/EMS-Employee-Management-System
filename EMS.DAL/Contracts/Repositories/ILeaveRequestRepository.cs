@@ -1,0 +1,13 @@
+using EMS.DAL.Entities.LeaveEntity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EMS.DAL.Contracts.Repositories
+{
+    public interface ILeaveRequestRepository : IGenericRepository<LeaveRequest>
+    {
+    }
+}

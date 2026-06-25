@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h2>Home</h2>
+
+<div>
+    <h3>HR Notifications</h3>
+    <ul id="notifications" style="list-style:none;padding:0"></ul>
+    <h4>Pending Leave Requests (HR)</h4>
+    <ul id="pendingRequests" style="list-style:none;padding:0"></ul>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js" integrity="sha512-x..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        (function(){
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl('/hubs/notifications')
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on('ReceiveNotification', function (data) {
+                const ul = document.getElementById('notifications');
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${data.Title}</strong> - ${data.Message}`;
+                ul.insertBefore(li, ul.firstChild);
+
+                // if payload indicates a leave request, add to pending list
+                try{
+                    const payload = data.Payload || {};
+                    if (payload.EmployeeId){
+                        const pr = document.getElementById('pendingRequests');
+                        const li2 = document.createElement('li');
+                        li2.innerHTML = `<strong>Leave:</strong> Employee #${payload.EmployeeId} ${new Date(payload.StartDate).toLocaleDateString()} - ${new Date(payload.EndDate).toLocaleDateString()}`;
+                        pr.insertBefore(li2, pr.firstChild);
+                    }
+                }catch(e){console.error(e)}
+            });
+
+            // load existing pending requests for HR (if authorized)
+            (async function loadPending(){
+                try{
+                    const res = await fetch('/Leave/GetPendingRequestsJson');
+                    if (!res.ok) return;
+                    const list = await res.json();
+                    const pr = document.getElementById('pendingRequests');
+                    pr.innerHTML = '';
+                    for(const r of list){
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${r.employeeName ?? ('#'+r.employeeId)}</strong>: ${new Date(r.startDate).toLocaleDateString()} - ${new Date(r.endDate).toLocaleDateString()} <span style="color:gray">(${new Date(r.requestedOn).toLocaleString()})</span>`;
+                        pr.appendChild(li);
+                    }
+                }catch(e){/* ignore unauthorized */}
+            })();
+
+            connection.start().catch(err => console.error(err.toString()));
+        })();
+    </script>
+}

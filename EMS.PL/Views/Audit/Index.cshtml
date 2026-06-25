@@ -1,0 +1,516 @@
+@using EMS.BLL.Services.AuditService
+@using System.Text.Json
+@model IEnumerable<AuditLogDto>
+
+@{
+    ViewData["Title"] = "Audit Trail";
+    var audits = Model?.ToList() ?? new List<AuditLogDto>();
+    var tables = ViewBag.Tables as IEnumerable<string> ?? Enumerable.Empty<string>();
+    var selectedTable = ViewBag.TableName as string;
+    var selectedAction = ViewBag.Action as string;
+    var search = ViewBag.Search as string;
+    var fromDate = ViewBag.FromDate as string;
+    var toDate = ViewBag.ToDate as string;
+    var pageTitle = ViewBag.PageTitle as string ?? "Audit Trail";
+}
+
+@functions {
+    private static string PrettyJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json) || json == "{}")
+            return "No values";
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            return JsonSerializer.Serialize(document.RootElement, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch
+        {
+            return json;
+        }
+    }
+}
+
+<style>
+    .audit-page {
+        max-width: 1380px;
+        margin: 0 auto;
+        color: #e5eefb;
+    }
+
+    .audit-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .audit-title {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 0;
+    }
+
+    .audit-subtitle {
+        margin: .35rem 0 0;
+        color: #9fb1c7;
+    }
+
+    .audit-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .9rem;
+        margin-bottom: 1rem;
+    }
+
+    .audit-metric,
+    .audit-panel {
+        border: 1px solid rgba(148, 163, 184, .14);
+        background: #111a2b;
+        border-radius: 8px;
+        box-shadow: 0 18px 40px rgba(2, 6, 23, .18);
+    }
+
+    .audit-metric {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        min-height: 92px;
+    }
+
+    .audit-metric-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(37, 99, 235, .13);
+        color: #60a5fa;
+        flex: 0 0 42px;
+    }
+
+    .audit-metric-label {
+        color: #9fb1c7;
+        font-size: .82rem;
+        margin-bottom: .15rem;
+    }
+
+    .audit-metric-value {
+        font-size: 1.55rem;
+        font-weight: 800;
+        line-height: 1.15;
+    }
+
+    .audit-filters {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .audit-filter-grid {
+        display: grid;
+        grid-template-columns: 1.15fr .85fr .9fr .9fr 1.2fr auto;
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .audit-page label {
+        color: #c7d5e8;
+        font-size: .85rem;
+        margin-bottom: .35rem;
+    }
+
+    .audit-page .form-control,
+    .audit-page .form-select {
+        background-color: #09111f;
+        border-color: rgba(148, 163, 184, .16);
+        color: #f8fafc;
+        min-height: 42px;
+        border-radius: 7px;
+    }
+
+    .audit-page .form-control:focus,
+    .audit-page .form-select:focus {
+        background-color: #09111f;
+        border-color: rgba(96, 165, 250, .72);
+        color: #fff;
+        box-shadow: 0 0 0 .18rem rgba(37, 99, 235, .14);
+    }
+
+    .audit-actions {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+    }
+
+    .audit-table-panel {
+        overflow: hidden;
+    }
+
+    .audit-table-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, .12);
+    }
+
+    .audit-table-title {
+        margin: 0;
+        font-size: 1rem;
+        color: #f8fafc;
+        font-weight: 750;
+    }
+
+    .audit-count {
+        color: #9fb1c7;
+        font-size: .86rem;
+    }
+
+    .audit-table-wrap {
+        overflow-x: auto;
+    }
+
+    .audit-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 980px;
+    }
+
+    .audit-table th {
+        color: #9fb1c7;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: .82rem 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, .1);
+        background: rgba(9, 17, 31, .74);
+    }
+
+    .audit-table td {
+        padding: .9rem 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, .08);
+        color: #dce8f8;
+        vertical-align: middle;
+    }
+
+    .audit-table tr:hover td {
+        background: rgba(37, 99, 235, .05);
+    }
+
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .28rem .58rem;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 750;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+    .audit-chip-create {
+        background: rgba(16, 185, 129, .12);
+        color: #8ff0c8;
+        border-color: rgba(16, 185, 129, .18);
+    }
+
+    .audit-chip-update {
+        background: rgba(96, 165, 250, .12);
+        color: #93c5fd;
+        border-color: rgba(96, 165, 250, .18);
+    }
+
+    .audit-chip-delete {
+        background: rgba(239, 68, 68, .12);
+        color: #fca5a5;
+        border-color: rgba(239, 68, 68, .18);
+    }
+
+    .audit-record {
+        font-family: Consolas, monospace;
+        color: #cbd5e1;
+        font-size: .88rem;
+    }
+
+    .audit-muted {
+        color: #90a4bb;
+        font-size: .84rem;
+    }
+
+    .audit-empty {
+        padding: 3rem 1rem;
+        text-align: center;
+        color: #9fb1c7;
+    }
+
+    .audit-json-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .audit-json-box {
+        background: #08101e;
+        border: 1px solid rgba(148, 163, 184, .14);
+        border-radius: 8px;
+        padding: .9rem;
+    }
+
+    .audit-json-title {
+        color: #c7d5e8;
+        font-size: .85rem;
+        font-weight: 700;
+        margin-bottom: .6rem;
+    }
+
+    .audit-json-box pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: #dbeafe;
+        font-size: .82rem;
+        max-height: 320px;
+        overflow: auto;
+    }
+
+    @@media (max-width: 1100px) {
+        .audit-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .audit-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .audit-hero {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .audit-summary,
+        .audit-filter-grid,
+        .audit-json-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="audit-page">
+    <div class="audit-hero">
+        <div>
+            <h1 class="audit-title">@pageTitle</h1>
+            <p class="audit-subtitle">Automatic change tracking from SaveChanges. Visible to HR and Admin only.</p>
+        </div>
+        <a class="btn btn-outline-light btn-sm" asp-controller="Dashboard" asp-action="Index">
+            <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+
+    <div class="audit-summary">
+        <div class="audit-metric">
+            <span class="audit-metric-icon"><i class="fa-solid fa-database"></i></span>
+            <div>
+                <div class="audit-metric-label">Total Logs</div>
+                <div class="audit-metric-value">@ViewBag.TotalCount</div>
+            </div>
+        </div>
+        <div class="audit-metric">
+            <span class="audit-metric-icon"><i class="fa-solid fa-plus"></i></span>
+            <div>
+                <div class="audit-metric-label">Created</div>
+                <div class="audit-metric-value">@ViewBag.CreateCount</div>
+            </div>
+        </div>
+        <div class="audit-metric">
+            <span class="audit-metric-icon"><i class="fa-solid fa-pen"></i></span>
+            <div>
+                <div class="audit-metric-label">Updated</div>
+                <div class="audit-metric-value">@ViewBag.UpdateCount</div>
+            </div>
+        </div>
+        <div class="audit-metric">
+            <span class="audit-metric-icon"><i class="fa-solid fa-trash"></i></span>
+            <div>
+                <div class="audit-metric-label">Deleted</div>
+                <div class="audit-metric-value">@ViewBag.DeleteCount</div>
+            </div>
+        </div>
+    </div>
+
+    <form class="audit-panel audit-filters" method="get" asp-controller="Audit" asp-action="Index">
+        <div class="audit-filter-grid">
+            <div>
+                <label for="tableName">Table</label>
+                <select class="form-select" id="tableName" name="tableName">
+                    <option value="">All tables</option>
+                    @foreach (var table in tables)
+                    {
+                        <option value="@table" selected="@(string.Equals(selectedTable, table, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
+                            @table
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label for="action">Action</label>
+                <select class="form-select" id="action" name="action">
+                    <option value="">All actions</option>
+                    <option value="Create" selected="@(selectedAction == "Create" ? "selected" : null)">Create</option>
+                    <option value="Update" selected="@(selectedAction == "Update" ? "selected" : null)">Update</option>
+                    <option value="Delete" selected="@(selectedAction == "Delete" ? "selected" : null)">Delete</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="fromDate">From</label>
+                <input class="form-control" type="date" id="fromDate" name="fromDate" value="@fromDate" />
+            </div>
+
+            <div>
+                <label for="toDate">To</label>
+                <input class="form-control" type="date" id="toDate" name="toDate" value="@toDate" />
+            </div>
+
+            <div>
+                <label for="search">Search</label>
+                <input class="form-control" type="search" id="search" name="search" value="@search" placeholder="User, record, table, IP..." />
+            </div>
+
+            <div class="audit-actions">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fa-solid fa-filter me-1"></i> Apply
+                </button>
+                <a class="btn btn-outline-secondary" asp-controller="Audit" asp-action="Index">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <section class="audit-panel audit-table-panel">
+        <div class="audit-table-head">
+            <div>
+                <h2 class="audit-table-title">Recent Changes</h2>
+                <div class="audit-count">Showing @audits.Count log(s)</div>
+            </div>
+        </div>
+
+        @if (audits.Any())
+        {
+            <div class="audit-table-wrap">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Table</th>
+                            <th>Record</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Description</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var audit in audits)
+                        {
+                            var actionClass = audit.Action switch
+                            {
+                                "Create" => "audit-chip-create",
+                                "Delete" => "audit-chip-delete",
+                                _ => "audit-chip-update"
+                            };
+
+                            <tr>
+                                <td>@audit.Id</td>
+                                <td>
+                                    <div>@audit.ChangedDate.ToLocalTime().ToString("yyyy-MM-dd")</div>
+                                    <div class="audit-muted">@audit.ChangedDate.ToLocalTime().ToString("hh:mm tt")</div>
+                                </td>
+                                <td>@audit.TableName</td>
+                                <td><span class="audit-record">@audit.RecordId</span></td>
+                                <td>
+                                    <div>@audit.UserEmail</div>
+                                    <div class="audit-muted">@audit.SourceIp</div>
+                                </td>
+                                <td><span class="audit-chip @actionClass">@audit.Action</span></td>
+                                <td>@audit.ChangeDescription</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="modal" data-bs-target="#auditDetails@(audit.Id)">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="audit-empty">
+                <i class="fa-solid fa-clock-rotate-left fa-2x mb-3"></i>
+                <div>No audit logs match the current filters.</div>
+            </div>
+        }
+    </section>
+</div>
+
+@foreach (var audit in audits)
+{
+    <div class="modal fade" id="auditDetails@(audit.Id)" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Change #@audit.Id</h5>
+                        <div class="audit-muted">@audit.TableName / @audit.RecordId / @audit.Action</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="audit-muted">Changed By</div>
+                            <div>@audit.UserEmail</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="audit-muted">Changed At</div>
+                            <div>@audit.ChangedDate.ToLocalTime().ToString("yyyy-MM-dd hh:mm tt")</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="audit-muted">Source IP</div>
+                            <div>@audit.SourceIp</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="audit-muted">User ID</div>
+                            <div class="audit-record">@audit.UserId</div>
+                        </div>
+                    </div>
+
+                    <div class="audit-json-grid">
+                        <div class="audit-json-box">
+                            <div class="audit-json-title">Old Values</div>
+                            <pre>@PrettyJson(audit.OldValues)</pre>
+                        </div>
+                        <div class="audit-json-box">
+                            <div class="audit-json-title">New Values</div>
+                            <pre>@PrettyJson(audit.NewValues)</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

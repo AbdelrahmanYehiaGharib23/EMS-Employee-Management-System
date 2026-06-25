@@ -1,0 +1,503 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>403 — Access Denied</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: #030303;
+            font-family: 'Share Tech Mono', monospace;
+            color: #ccc;
+        }
+
+            body::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 30;
+                background: repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,0.13) 2px, rgba(0,0,0,0.13) 4px);
+            }
+
+        #vig {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            background: radial-gradient(ellipse 80% 70% at 50% 50%, transparent 25%, rgba(0,0,0,0.92) 100%);
+        }
+
+        #rain {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .wstripe {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            z-index: 40;
+            background: repeating-linear-gradient(90deg, #cc0000 0, #cc0000 20px, #000 20px, #000 40px);
+            animation: sstripe 1s linear infinite;
+        }
+
+        .tbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 18px;
+            background: rgba(160,0,0,0.18);
+            border-bottom: 1px solid rgba(200,0,0,0.35);
+            font-size: 10px;
+            letter-spacing: .12em;
+            color: rgba(255,100,100,0.85);
+        }
+
+        .tblink {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff2222;
+            box-shadow: 0 0 8px #ff2222;
+            animation: blink .8s step-end infinite;
+            flex-shrink: 0;
+        }
+
+        .body {
+            position: relative;
+            z-index: 35;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px 30px;
+        }
+
+        .badge {
+            font-size: 9px;
+            letter-spacing: .2em;
+            padding: 4px 14px;
+            border: 1px solid rgba(255,30,30,.5);
+            color: #ff4040;
+            background: rgba(255,30,30,.1);
+            animation: pbadge 2s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        .c403 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(5.5rem, 18vw, 9rem);
+            font-weight: 900;
+            line-height: 1;
+            color: #ff1a1a;
+            position: relative;
+            animation: glitch 5s infinite;
+            text-shadow: 0 0 40px rgba(255,26,26,.35);
+        }
+
+            .c403::before {
+                content: '403';
+                position: absolute;
+                inset: 0;
+                color: #00e5ff;
+                clip-path: inset(28% 0 42% 0);
+                animation: ga 5s infinite;
+                opacity: .55;
+            }
+
+            .c403::after {
+                content: '403';
+                position: absolute;
+                inset: 0;
+                color: #ff1a1a;
+                clip-path: inset(65% 0 8% 0);
+                animation: gb 5s infinite;
+                opacity: .38;
+            }
+
+        .denied {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(.85rem, 2.8vw, 1.35rem);
+            font-weight: 700;
+            letter-spacing: .5em;
+            color: #fff;
+            margin: 8px 0 24px;
+            animation: flicker 8s infinite;
+        }
+
+        .dline {
+            width: min(500px, 92vw);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ff1a1a 15%, #ff1a1a 85%, transparent);
+            margin-bottom: 20px;
+        }
+
+        .igrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: min(500px, 92vw);
+            margin-bottom: 18px;
+        }
+
+        .ic {
+            border: 1px solid rgba(170,0,0,.4);
+            background: rgba(140,0,0,.08);
+            padding: 9px 13px;
+        }
+
+        .icl {
+            font-size: 9px;
+            letter-spacing: .14em;
+            color: rgba(200,80,80,.65);
+            margin-bottom: 5px;
+        }
+
+        .icv {
+            font-size: 12px;
+            color: #ff6060;
+        }
+
+        .twrap {
+            width: min(500px, 92vw);
+            margin-bottom: 18px;
+        }
+
+        .tlab {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            letter-spacing: .1em;
+            color: rgba(200,80,80,.6);
+            margin-bottom: 6px;
+        }
+
+        .ttrack {
+            height: 5px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(160,0,0,.3);
+            overflow: hidden;
+        }
+
+        .tfill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #8b0000, #ff2222);
+            transition: width 2.8s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 0 12px rgba(255,20,20,.6);
+        }
+
+        .term {
+            width: min(500px, 92vw);
+            border: 1px solid rgba(160,0,0,.35);
+            background: rgba(140,0,0,.06);
+            padding: 11px 15px;
+            font-size: 10.5px;
+            line-height: 2.1;
+            color: #484848;
+            margin-bottom: 22px;
+        }
+
+        .pr {
+            color: rgba(170,0,0,.85);
+        }
+
+        .vl {
+            color: #ff5555;
+        }
+
+        .back {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .12em;
+            color: #ff3030;
+            border: 1px solid rgba(180,0,0,.5);
+            background: transparent;
+            padding: 10px 28px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background .2s, color .2s, box-shadow .2s;
+        }
+
+            .back:hover {
+                background: rgba(255,26,26,.1);
+                color: #fff;
+                box-shadow: 0 0 20px rgba(255,20,20,.2);
+            }
+
+        @@keyframes blink {
+            0%, 100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .05
+            }
+        }
+
+        @@keyframes sstripe {
+            from {
+                background-position: 0 0
+            }
+
+            to {
+                background-position: 40px 0
+            }
+        }
+
+        @@keyframes pbadge {
+            0%, 100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .45
+            }
+        }
+
+        @@keyframes flicker {
+            0%, 89%, 100% {
+                opacity: 1
+            }
+
+            91% {
+                opacity: .5
+            }
+
+            93% {
+                opacity: 1
+            }
+
+            95% {
+                opacity: .65
+            }
+
+            97% {
+                opacity: 1
+            }
+        }
+
+        @@keyframes glitch {
+            0%, 87%, 100% {
+                transform: translate(0) skew(0)
+            }
+
+            89% {
+                transform: translate(-4px,1px) skew(-.5deg)
+            }
+
+            91% {
+                transform: translate(4px,-1px) skew(.5deg)
+            }
+
+            93% {
+                transform: translate(-2px,2px)
+            }
+
+            95% {
+                transform: translate(0)
+            }
+        }
+
+        @@keyframes ga {
+            0%, 87%, 100% {
+                transform: translate(0)
+            }
+
+            89% {
+                transform: translate(6px,-2px)
+            }
+
+            91% {
+                transform: translate(-6px,2px)
+            }
+        }
+
+        @@keyframes gb {
+            0%, 87%, 100% {
+                transform: translate(0)
+            }
+
+            89% {
+                transform: translate(-5px,3px)
+            }
+
+            91% {
+                transform: translate(5px,-2px)
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rain"></canvas>
+    <div id="vig"></div>
+    <div class="wstripe"></div>
+
+    <div class="tbar">
+        <span class="tblink"></span>
+        <span>SECURITY BREACH DETECTED</span>
+        <span style="opacity:.35">|</span>
+        <span>INTRUSION PREVENTION ACTIVE</span>
+        <span style="margin-left:auto;opacity:.55;font-size:9px" id="clk"></span>
+    </div>
+
+    <div class="body">
+
+        <div class="badge">ALERT &mdash; UNAUTHORIZED ACCESS ATTEMPT</div>
+
+        <div class="c403">403</div>
+        <div class="denied">ACCESS &nbsp; DENIED</div>
+
+        <div class="dline"></div>
+
+        <div class="igrid">
+            <div class="ic">
+                <div class="icl">STATUS CODE</div>
+                <div class="icv">403 FORBIDDEN</div>
+            </div>
+            <div class="ic">
+                <div class="icl">THREAT LEVEL</div>
+                <div class="icv" style="color:#ff2222;font-weight:bold">CRITICAL</div>
+            </div>
+            <div class="ic">
+                <div class="icl">SESSION ID</div>
+                <div class="icv" id="sess">---</div>
+            </div>
+            <div class="ic">
+                <div class="icl">INCIDENT REF</div>
+                <div class="icv" id="inc">---</div>
+            </div>
+        </div>
+
+        <div class="twrap">
+            <div class="tlab">
+                <span>THREAT ASSESSMENT</span>
+                <span id="pct">0%</span>
+            </div>
+            <div class="ttrack">
+                <div class="tfill" id="tfill"></div>
+            </div>
+        </div>
+
+        <div class="term">
+            <div><span class="pr">SYS&gt;&nbsp;</span><span id="t0"></span></div>
+            <div><span class="pr">SYS&gt;&nbsp;</span><span id="t1"></span></div>
+            <div><span class="pr">SYS&gt;&nbsp;</span><span id="t2"></span></div>
+            <div><span class="pr">SYS&gt;&nbsp;</span><span id="t3"></span></div>
+        </div>
+
+        <button class="back" onclick="history.back()">&#8592;&nbsp; Return to safety</button>
+
+    </div>
+
+    <script>
+        (function () {
+            var canvas = document.getElementById('rain'),
+                ctx = canvas.getContext('2d'),
+                chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%^&アイウエオカキクケコサシスセソ',
+                cols, drops;
+
+            function init() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                cols = Math.floor(canvas.width / 18);
+                drops = [];
+                for (var i = 0; i < cols; i++) drops[i] = Math.random() * -60;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(3,3,3,0.055)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.font = '13px Share Tech Mono, monospace';
+                for (var i = 0; i < cols; i++) {
+                    var y = drops[i] * 18;
+                    ctx.fillStyle = 'rgba(255,30,30,0.88)';
+                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 18, y);
+                    ctx.fillStyle = 'rgba(130,0,0,0.32)';
+                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 18, y - 18);
+                    if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i] += 0.38;
+                }
+            }
+
+            init();
+            window.addEventListener('resize', init);
+            setInterval(draw, 48);
+
+            function tick() { var e = document.getElementById('clk'); if (e) e.textContent = new Date().toUTCString(); }
+            tick(); setInterval(tick, 1000);
+
+            function rh(n) {
+                return Array.from({ length: n }, function () {
+                    return Math.floor(Math.random() * 16).toString(16).toUpperCase();
+                }).join('');
+            }
+
+            document.getElementById('sess').textContent = rh(4) + '-' + rh(4) + '-' + rh(4);
+            var incRef = rh(8);
+            document.getElementById('inc').textContent = 'INC-' + incRef;
+
+            var pct = 0,
+                tf = document.getElementById('tfill'),
+                pe = document.getElementById('pct');
+            setTimeout(function () { tf.style.width = '97%'; }, 600);
+            var iv = setInterval(function () {
+                pct = Math.min(97, pct + 2);
+                pe.textContent = pct + '%';
+                if (pct >= 97) clearInterval(iv);
+            }, 62);
+
+            var lines = [
+                ['t0', 'authorization_check ......... ', 'FAILED'],
+                ['t1', 'permission_level ............ ', 'INSUFFICIENT'],
+                ['t2', 'session_blacklisted ......... ', 'TRUE'],
+                ['t3', 'incident_logged ............. ', 'REF:' + incRef]
+            ];
+
+            function tw(id, txt, val, delay) {
+                setTimeout(function () {
+                    var el = document.getElementById(id), i = 0;
+                    var iv2 = setInterval(function () {
+                        if (i < txt.length) { el.textContent = txt.slice(0, ++i); }
+                        else {
+                            clearInterval(iv2);
+                            var s = document.createElement('span');
+                            s.className = 'vl';
+                            s.textContent = val;
+                            el.parentElement.appendChild(s);
+                        }
+                    }, 16);
+                }, delay);
+            }
+
+            lines.forEach(function (l, i) { tw(l[0], l[1], l[2], 900 + i * 720); });
+        })();
+    </script>
+</body>
+</html>

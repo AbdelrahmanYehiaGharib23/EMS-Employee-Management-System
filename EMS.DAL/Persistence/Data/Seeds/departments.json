@@ -1,0 +1,33 @@
+[
+  {
+    "Code": "DEP3030",
+    "Name": "Sales",
+    "Description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit.",
+    "CreatedOn": "2010-10-10",
+    "CreatedBy": 0,
+    "LastModifiedBy": 0,
+    "LastModifiedOn": null,
+    "IsDeleted": false
+  },
+  {
+    "Code": "DEP2020",
+    "Name": "Media",
+    "Description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit.",
+    "CreatedOn": "2000-08-22",
+    "CreatedBy": 0,
+    "LastModifiedBy": 0,
+    "LastModifiedOn": null,
+    "IsDeleted": false
+  },
+  {
+    "Code": "DEP4040",
+    "Name": "Markting",
+    "Description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit.",
+    "CreatedOn": "2005-01-19",
+    "CreatedBy": 0,
+    "LastModifiedBy": 0,
+    "LastModifiedOn": null,
+    "IsDeleted": false
+  }
+]
+

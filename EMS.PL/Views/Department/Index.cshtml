@@ -1,0 +1,79 @@
+@using EMS.BLL.Models.Dto.DepartmentDto
+@model IEnumerable<DepartmentDto>
+@{
+    ViewData["Title"] = "Departments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="content-wrapper">
+    <div class="section-header">
+        <h3 class="m-0">All Departments</h3>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+        {
+            <a class="btn btn-create px-4"
+               asp-action="Create">
+                <i class="bi bi-plus-circle me-1"></i> Create
+            </a>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card-panel">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-light table-dark-theme">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                            <th width="220">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var department in Model)
+                        {
+                            <tr>
+                                <td>@department.Code</td>
+                                <td>@department.Name</td>
+                                <td>@department.Description</td>
+                                <td>@department.DateOfCreation</td>
+
+                                <td>
+                                    <a class="btn btn-sm btn-outline-light me-1"
+                                       asp-action="Details"
+                                       asp-route-id="@department.Id" title="Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                                    {
+                                        <a class="btn btn-sm btn-outline-light me-1"
+                                           asp-action="Edit"
+                                           asp-route-id="@department.Id" title="Edit">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <a class="btn btn-sm btn-outline-danger"
+                                           asp-action="Delete"
+                                           asp-route-id="@department.Id" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-secondary text-center">No Departments Found</div>
+    }
+    </div>
+</div>

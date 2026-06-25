@@ -1,0 +1,108 @@
+@model IEnumerable<EMS.BLL.Models.Dto.LeaveDto.LeaveRequestDto>
+@{
+    ViewData["Title"] = "Leave Approvals";
+}
+
+<h2>Pending Leave Requests</h2>
+<div>
+    <table class="table" id="requestsTable">
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>Requested On</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var r in Model)
+            {
+                <tr data-id="@r.Id">
+                    <td>@r.EmployeeName (@r.EmployeeId)</td>
+                    <td>@r.StartDate.ToShortDateString()</td>
+                    <td>@r.EndDate.ToShortDateString()</td>
+                    <td>@r.Reason</td>
+                    <td>@r.RequestedOn.ToString("g")</td>
+                    <td>
+                        <button class="btn btn-success btn-approve" data-id="@r.Id">Approve</button>
+                        <button class="btn btn-danger btn-reject" data-id="@r.Id">Reject</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        (function(){
+            const tableBody = document.querySelector('#requestsTable tbody');
+
+            async function loadPending(){
+                try{
+                    const res = await fetch('/Leave/GetPendingRequestsJson');
+                    if (!res.ok) return;
+                    const list = await res.json();
+                    tableBody.innerHTML = '';
+                    for(const r of list){
+                        const tr = document.createElement('tr');
+                        tr.setAttribute('data-id', r.id);
+                        tr.innerHTML = `<td>${r.employeeName} (${r.employeeId})</td>`+
+                                       `<td>${new Date(r.startDate).toLocaleDateString()}</td>`+
+                                       `<td>${new Date(r.endDate).toLocaleDateString()}</td>`+
+                                       `<td>${r.reason ?? ''}</td>`+
+                                       `<td>${new Date(r.requestedOn).toLocaleString()}</td>`+
+                                       `<td><button class="btn btn-success btn-approve" data-id="${r.id}">Approve</button> <button class="btn btn-danger btn-reject" data-id="${r.id}">Reject</button></td>`;
+                        tableBody.appendChild(tr);
+                    }
+                }catch(e){
+                    console.error(e);
+                }
+            }
+
+            // SignalR
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl('/hubs/notifications')
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on('ReceiveNotification', function(data){
+                // if notification looks like a new leave request, reload list
+                if (data && data.Payload && data.Payload.EmployeeId){
+                    loadPending();
+                }
+            });
+
+            connection.start().catch(e=>console.error(e));
+
+            document.addEventListener('click', async function(e){
+                const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                const token = tokenMeta ? tokenMeta.getAttribute('content') : '';
+                const fetchOpts = (method = 'POST') => ({
+                    method,
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (e.target.matches('.btn-approve')){
+                    const id = e.target.getAttribute('data-id');
+                    await fetch(`/Leave/Approve?id=${id}&approver=HR`, fetchOpts('POST'));
+                    await loadPending();
+                }
+                if (e.target.matches('.btn-reject')){
+                    const id = e.target.getAttribute('data-id');
+                    await fetch(`/Leave/Reject?id=${id}&approver=HR`, fetchOpts('POST'));
+                    await loadPending();
+                }
+            });
+
+            // initial load
+            loadPending();
+        })();
+    </script>
+}

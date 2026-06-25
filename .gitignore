@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+.idea/
+.build/
+
+*.log
+*.user
+serviceDependencies.local.json
+serviceDependencies.local.json.user

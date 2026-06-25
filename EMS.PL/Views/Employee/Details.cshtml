@@ -1,0 +1,52 @@
+﻿@model EmployeeDetailsDto
+
+@{
+    ViewData["Title"] = "Employee Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="card-panel p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="m-0">Employee Details</h4>
+            <a asp-action="Index" class="btn btn-outline-light">Back</a>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label text-light fw-semibold">Name</label>
+                <input class="form-control bg-dark text-light border-secondary" value="@Model.Name" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-light fw-semibold">Email</label>
+                <input class="form-control bg-dark text-light border-secondary" value="@Model.Email" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-light fw-semibold">Phone</label>
+                <input class="form-control bg-dark text-light border-secondary" value="@Model.PhoneNumber" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-light fw-semibold">Salary</label>
+                <input class="form-control bg-dark text-light border-secondary" value="@Model.Salary.ToString("C")" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-light fw-semibold">Department</label>
+                <input class="form-control bg-dark text-light border-secondary" value="@Model.DepartmentName" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-light fw-semibold">Employee Type</label>
+                <input class="form-control bg-dark text-light border-secondary" value="@Model.EmployeeType" readonly />
+            </div>
+        </div>
+
+        <div class="text-end mt-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-create me-2">Edit</a>
+            <a asp-action="Index" class="btn btn-outline-light">Back</a>
+        </div>
+    </div>
+</div>

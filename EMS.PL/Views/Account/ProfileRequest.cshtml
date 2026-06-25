@@ -1,0 +1,250 @@
+@model EMS.PL.ViewModels.Identity.ProfileRequestViewModel
+@using EMS.DAL.Entities.EmployeeEntity
+@inject EMS.BLL.Services.DepartmentServices.IDepartmentService departmentService
+@inject EMS.DAL.Contracts.UnitOfWork.IUnitOfWork unitOfWork
+
+@{
+    ViewData["Title"] = "Employee Profile Request";
+    var Departments = new SelectList(await departmentService.GetDepartmentsAsync(), "Id", "Name");
+}
+
+<style>
+    .profile-request-wrap {
+        max-width: 1180px;
+        margin: 2rem auto 0;
+    }
+
+    .profile-request-panel {
+        background: #111827;
+        border: 1px solid rgba(148, 163, 184, .16);
+        border-radius: .5rem;
+        padding: 1.75rem;
+        box-shadow: 0 18px 40px rgba(2, 6, 23, .18);
+    }
+
+    .profile-request-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, .16);
+    }
+
+    .profile-request-head h2 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .profile-request-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .profile-field {
+        grid-column: span 6;
+    }
+
+    .profile-field-wide {
+        grid-column: span 12;
+    }
+
+    .profile-section-title {
+        grid-column: span 12;
+        color: #93c5fd;
+        font-size: .85rem;
+        font-weight: 700;
+        letter-spacing: .02em;
+        margin-top: .35rem;
+        padding-bottom: .45rem;
+        border-bottom: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .profile-request-grid .form-control,
+    .profile-request-grid .form-select {
+        min-height: 42px;
+    }
+
+    .profile-check-row {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        padding: .55rem .75rem;
+        border: 1px solid rgba(148, 163, 184, .35);
+        border-radius: .375rem;
+        background: #0b1020;
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(148, 163, 184, .16);
+    }
+
+    @@media (max-width: 767px) {
+        .profile-request-wrap {
+            margin-top: 1rem;
+        }
+
+        .profile-request-panel {
+            padding: 1rem;
+        }
+
+        .profile-field,
+        .profile-field-wide {
+            grid-column: span 12;
+        }
+
+        .profile-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@* Silent lookup is performed server-side. If an employee exists we show the match and block new requests. *@
+@if (ViewBag.EmployeeMatch != null)
+{
+    <div class="alert alert-info">An employee record already exists for this email. You cannot create a new profile request.</div>
+    @await Html.PartialAsync("_EmployeeMatchPartial", (EMS.BLL.Models.Dto.EmployeeDto.EmployeeDetailsDto)ViewBag.EmployeeMatch)
+}
+
+<div class="profile-request-wrap">
+    <div class="profile-request-panel">
+        <div class="profile-request-head">
+            <h2>Employee Profile Request</h2>
+        </div>
+
+        <form method="post" asp-action="SubmitProfileRequest" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="profile-request-grid">
+                <div class="profile-section-title">Basic Information</div>
+
+                <div class="profile-field">
+                    <label asp-for="Name" class="form-label">Name</label>
+                    <input asp-for="Name" class="form-control bg-dark text-light border-secondary" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control bg-dark text-light border-secondary" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control bg-dark text-light border-secondary" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="Age" class="form-label">Age</label>
+                    <input asp-for="Age" class="form-control bg-dark text-light border-secondary" type="number" />
+                    <span asp-validation-for="Age" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field-wide">
+                    <label asp-for="Address" class="form-label">Address</label>
+                    <input asp-for="Address" class="form-control bg-dark text-light border-secondary" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="profile-section-title">Employment Details</div>
+
+                <div class="profile-field">
+                    <label asp-for="Salary" class="form-label">Salary</label>
+                    <input asp-for="Salary" class="form-control bg-dark text-light border-secondary" type="number" step="0.01" />
+                    <span asp-validation-for="Salary" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="HiringTimeString" class="form-label">Hiring Date</label>
+                    <input asp-for="HiringTimeString" class="form-control bg-dark text-light border-secondary" type="date" value="@(Model?.HiringTime.HasValue == true ? Model.HiringTime.Value.ToString("yyyy-MM-dd") : Model?.HiringTimeString ?? string.Empty)" />
+                    <span asp-validation-for="HiringTimeString" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="Gender" class="form-label">Gender</label>
+                    <select asp-for="Gender" class="form-select bg-dark text-light border-secondary">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="EmployeeType" class="form-label">Employee Type</label>
+                    <select asp-for="EmployeeType" class="form-select bg-dark text-light border-secondary">
+                        <option value="">Select Type</option>
+                        @foreach (EmployeeType et in Enum.GetValues(typeof(EmployeeType)))
+                        {
+                            var etVal = et.ToString();
+                            if (Model?.EmployeeType == etVal)
+                            {
+                                <option value="@etVal" selected="selected">@etVal</option>
+                            }
+                            else
+                            {
+                                <option value="@etVal">@etVal</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="EmployeeType" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="DepartmentId" class="form-label">Department Name</label>
+                    <select asp-for="DepartmentId" asp-items="Departments" class="form-select bg-dark text-light border-secondary">
+                        <option value="">-- Select Department --</option>
+                    </select>
+                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field">
+                    <label asp-for="Image" class="form-label">Image</label>
+                    <input asp-for="Image" class="form-control bg-dark text-light border-secondary" type="file" accept="image/*" />
+                    <span asp-validation-for="Image" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field-wide">
+                    <label class="form-label d-block">Marital Status</label>
+                    <div class="profile-check-row">
+                        <input asp-for="IsMarred" class="form-check-input m-0" />
+                        <label asp-for="IsMarred" class="form-check-label">Married</label>
+                    </div>
+                    <span asp-validation-for="IsMarred" class="text-danger"></span>
+                </div>
+
+                <div class="profile-field-wide">
+                    <label asp-for="Message" class="form-label">Note / Message</label>
+                    <textarea asp-for="Message" class="form-control bg-dark text-light border-secondary" rows="4"></textarea>
+                    <span asp-validation-for="Message" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button type="submit" class="btn btn-primary px-4" @(ViewBag.EmployeeMatch != null ? "disabled" : "")>
+                    <i class="fas fa-paper-plane me-1"></i> Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@* No client-side manual check; server does a silent lookup and renders the partial when appropriate. *@

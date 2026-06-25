@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Employee Record Not Found";
+}
+
+<div class="container mt-5">
+    <div class="card" style="background:linear-gradient(180deg,#0f1724,#071022);border:1px solid rgba(255,255,255,0.03);">
+        <div class="card-body text-light">
+            <h4>Employee record not found</h4>
+            <p style="color:var(--muted)">Your account was created successfully, but no employee record is linked to it yet.</p>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            else if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            <p style="color:var(--muted)">You can request HR to create your employee profile by clicking the button below.</p>
+
+            <a asp-controller="Account" asp-action="ProfileRequest" class="btn btn-primary">Request Employee Profile</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light ms-2">Back to Home</a>
+        </div>
+    </div>
+</div>

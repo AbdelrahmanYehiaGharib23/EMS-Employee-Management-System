@@ -1,0 +1,39 @@
+﻿@model DepartmentViewModel
+
+<div class="row g-4">
+
+    <!-- Name -->
+    <div class="col-md-6">
+        <label class="form-label fw-semibold text-light" asp-for="Name"></label>
+        <input asp-for="Name"
+               class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Name" class="text-danger small"></span>
+    </div>
+
+    <!-- Code -->
+    <div class="col-md-6">
+        <label class="form-label fw-semibold text-light" asp-for="Code"></label>
+        <input asp-for="Code"
+               class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Code" class="text-danger small"></span>
+    </div>
+
+    <!-- Description -->
+    <div class="col-12">
+        <label class="form-label fw-semibold text-light" asp-for="Description"></label>
+        <textarea asp-for="Description"
+                  rows="3"
+                  class="form-control bg-dark text-light border-secondary"></textarea>
+        <span asp-validation-for="Description" class="text-danger small"></span>
+    </div>
+
+    <!-- Date Of Creation -->
+    <div class="col-md-6">
+        <label class="form-label fw-semibold text-light" asp-for="DateOfCreation"></label>
+        <input type="date"
+               asp-for="DateOfCreation"
+               class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="DateOfCreation" class="text-danger small"></span>
+    </div>
+
+</div>

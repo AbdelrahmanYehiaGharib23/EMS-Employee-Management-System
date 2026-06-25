@@ -1,0 +1,680 @@
+@* Modern Dark Admin Layout - Fixed Right Sidebar (Clean Version) *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EMS - @ViewBag.Title</title>
+    @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+    @* Render a single, hidden antiforgery token input in layout so client scripts can reliably read it.
+       DO NOT use a meta tag for antiforgery token because cookie/token pairing must match.
+       The hidden form below will be targeted by JavaScript (selector '#antiForgeryForm input[name=__RequestVerificationToken]'). *@
+    <form id="antiForgeryForm" style="display:none">@Html.AntiForgeryToken()</form>
+    <meta name="current-user-email" content="@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value" />
+    <meta name="is-hr" content="@(User.IsInRole("HR") ? "true" : "false")" />
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/motion-ui.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Basic layout styles to match dashboard cards and responsive sidebar */
+        :root{
+            --bg-dark: #0b1220;
+            --panel: #0f1724;
+            --muted: #94a3b8;
+            --muted-light: #aab9c6;
+            --accent: #2563eb;
+            --accent-light: #06b6d4;
+            --success: #34d399;
+            --danger: #ff6b6b;
+        }
+        html,body{height:100%;}
+        body{background:var(--bg-dark); color:#e6eef8; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+
+        /* Sidebar (moved to the right) */
+        #sidebar{position:fixed; right:0; left:auto; top:0; bottom:0; width:250px; background:var(--panel); padding:1.25rem; overflow:auto; border-left:1px solid rgba(148,163,184,0.04); transition:transform .18s ease; transform:translateX(0);} 
+        #sidebar .sidebar-header{margin-bottom:0.75rem}
+        #sidebar .nav-link{color:var(--muted); padding:0.5rem 0.25rem;}
+        #sidebar .nav-link:hover{color:var(--accent); text-decoration:none}
+        /* collapsed state moves sidebar off-screen to the right */
+        #sidebar.collapsed{transform:translateX(110%);} 
+        #sidebar.collapsed .nav-link{font-size:0.85rem}
+
+        /* Main content area (reserve space on the right for sidebar) */
+        #mainContent{margin-right:250px; transition:margin .18s ease;padding:1.25rem; min-height:100vh;}
+        /* when mainContent has .expanded, the sidebar is hidden so remove the right margin */
+        #mainContent.expanded{margin-right:0}
+
+        .topbar{height:56px; background:transparent; display:flex; align-items:center; padding:0 0.5rem; border-bottom:1px solid rgba(148,163,184,0.03); position:relative; z-index:5000; overflow:visible !important;}
+        .burger-btn{background:transparent;border:0;color:var(--muted);font-size:1.25rem}
+
+        .page-content{padding-top:1rem; position:relative; z-index:1;}
+
+        footer{padding:1rem 1.25rem; color:var(--muted); font-size:0.9rem}
+
+        @@media (max-width: 767px){
+            #sidebar{position:relative;width:100%;height:auto}
+            #mainContent{margin-left:0}
+        }
+
+        /* Notifications styling (ensure contrast on dark background) */
+        #notifWrapper { position: relative; z-index: 3200; }
+        /* keep bell left of sidebar so dropdown cannot reach sidebar area */
+        #notifWrapper { margin-right: 260px; }
+        /* ensure sidebar sits above small dropdowns */
+        #sidebar { z-index: 2000; }
+        #notifBell { background: transparent; border: 0; color: var(--muted); }
+        #notifBell i { color: var(--muted); font-size:1.05rem }
+        #notifBell:hover i { color: var(--accent); }
+
+        #notifDropdown.card {
+            display: none;
+            pointer-events: none;
+            position: fixed !important;
+            width: min(420px, calc(100vw - 32px)) !important;
+            background: #111827 !important;
+            border: 1px solid rgba(148, 163, 184, .2);
+            border-radius: 12px;
+            color: #e6eef8;
+            box-shadow: 0 22px 70px rgba(0, 0, 0, .48);
+            overflow: hidden;
+            isolation: isolate;
+            z-index: 10050 !important;
+        }
+
+        #notifDropdown.card.show {
+            display: block;
+            pointer-events: auto;
+        }
+
+        #notifDropdown .card-body {
+            padding: .85rem !important;
+        }
+
+        #notifDropdown h6 {
+            margin: 0 0 .7rem;
+            color: #f8fafc;
+            font-size: .95rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        #notifList {
+            display: grid;
+            gap: .65rem;
+            max-height: min(58vh, 420px) !important;
+            overflow: auto !important;
+            padding: 0;
+        }
+
+        #notifList .notification-item {
+            display: grid;
+            gap: .45rem;
+            padding: .8rem !important;
+            border: 1px solid rgba(148, 163, 184, .16) !important;
+            border-radius: 10px;
+            color: #e6eef8;
+            background: rgba(15, 23, 42, .92) !important;
+            box-shadow: inset 3px 0 0 rgba(96, 165, 250, .65);
+            line-height: 1.42;
+        }
+
+        #notifList .notification-item:last-child {
+            border-bottom: 1px solid rgba(148, 163, 184, .16) !important;
+        }
+
+        #notifList .notif-title {
+            color: #f8fafc;
+            font-size: .92rem;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        #notifList .notif-message,
+        #notifList .notification-item div[style] {
+            color: #aab9c6 !important;
+            font-size: .85rem !important;
+            line-height: 1.45;
+        }
+
+        #notifList .notif-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            margin-top: .25rem;
+        }
+
+        #notifList .notif-actions .btn {
+            min-height: 32px;
+            margin: 0 !important;
+            padding: .32rem .62rem;
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        #notifCount { background:#ff6b6b; color:#fff; font-size:0.72rem; padding:3px 6px; border-radius:999px; display:none }
+
+        #notifDetailsModal { z-index: 3400 !important; }
+        .modal-backdrop { z-index: 3300 !important; }
+
+        body.sidebar-collapsed #sidebar {
+            transform: translateX(110%) !important;
+        }
+
+        body.sidebar-collapsed #mainContent {
+            margin-right: 0 !important;
+        }
+
+        body.sidebar-collapsed #notifWrapper {
+            margin-right: 0;
+        }
+
+        :root {
+            --sidebar-width: 282px;
+            --sidebar-bg: #0b1220;
+            --sidebar-bg-soft: #111a2c;
+            --sidebar-border: rgba(148, 163, 184, .16);
+            --sidebar-text: #dbe7f7;
+            --sidebar-muted: #8fa3bd;
+            --sidebar-active: #2563eb;
+        }
+
+        #sidebar.app-sidebar {
+            position: fixed !important;
+            inset: 0 0 0 auto !important;
+            width: var(--sidebar-width) !important;
+            height: 100vh !important;
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+            background:
+                linear-gradient(180deg, rgba(37, 99, 235, .08), transparent 220px),
+                var(--sidebar-bg) !important;
+            border-left: 1px solid var(--sidebar-border) !important;
+            box-shadow: -24px 0 60px rgba(2, 6, 23, .22);
+            transform: translateX(0);
+            transition: transform .24s ease;
+            z-index: 2100 !important;
+            overflow: hidden !important;
+        }
+
+        .sidebar-shell {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .sidebar-brand {
+            min-height: 82px;
+            padding: 1.05rem 1rem .9rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            border-bottom: 1px solid rgba(148, 163, 184, .1);
+        }
+
+        .sidebar-brand-mark {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #dbeafe;
+            background: linear-gradient(135deg, #2563eb, #0891b2);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, .28);
+            flex: 0 0 44px;
+        }
+
+        .sidebar-brand-title {
+            margin: 0;
+            color: #f8fafc;
+            font-size: 1.45rem;
+            font-weight: 850;
+            line-height: 1.05;
+            letter-spacing: 0;
+        }
+
+        .sidebar-brand-subtitle {
+            color: var(--sidebar-muted);
+            font-size: .78rem;
+            margin-top: .18rem;
+        }
+
+        .sidebar-scroll {
+            padding: .85rem;
+            overflow-y: auto;
+            flex: 1 1 auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: .8rem;
+        }
+
+        .sidebar-section-title {
+            padding: .65rem .75rem .35rem;
+            color: #7187a4;
+            font-size: .72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        #sidebar.app-sidebar .nav {
+            gap: .18rem;
+        }
+
+        #sidebar.app-sidebar .nav-link {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: .72rem;
+            padding: .66rem .72rem !important;
+            border-radius: 8px !important;
+            color: var(--sidebar-muted) !important;
+            border: 1px solid transparent;
+            position: relative;
+            font-weight: 650;
+            transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+        }
+
+        #sidebar.app-sidebar .nav-link i {
+            width: 22px;
+            text-align: center;
+            color: #86a6cf;
+            font-size: .98rem;
+        }
+
+        #sidebar.app-sidebar .nav-link:hover {
+            color: #f8fafc !important;
+            background: rgba(148, 163, 184, .08) !important;
+            border-color: rgba(148, 163, 184, .12);
+            transform: translateX(-2px);
+        }
+
+        #sidebar.app-sidebar .nav-link.active {
+            color: #fff !important;
+            background: linear-gradient(90deg, rgba(37, 99, 235, .24), rgba(8, 145, 178, .1)) !important;
+            border-color: rgba(96, 165, 250, .26);
+            box-shadow: inset -3px 0 0 #3b82f6;
+        }
+
+        #sidebar.app-sidebar .nav-link.active i {
+            color: #bfdbfe;
+        }
+
+        .sidebar-user {
+            margin: .85rem;
+            padding: .85rem;
+            border: 1px solid rgba(148, 163, 184, .12);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, .72);
+        }
+
+        .sidebar-user-main {
+            display: flex;
+            gap: .72rem;
+            align-items: center;
+            min-width: 0;
+            margin-bottom: .75rem;
+        }
+
+        .sidebar-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(37, 99, 235, .18);
+            color: #dbeafe;
+            font-weight: 800;
+            flex: 0 0 40px;
+        }
+
+        .sidebar-user-name {
+            color: var(--sidebar-text);
+            font-weight: 750;
+            line-height: 1.15;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sidebar-user-role {
+            color: var(--sidebar-muted);
+            font-size: .8rem;
+            margin-top: .15rem;
+        }
+
+        .sidebar-logout {
+            width: 100%;
+            min-height: 38px;
+            border-radius: 8px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+        }
+
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, .58);
+            z-index: 2050;
+        }
+
+        body.sidebar-collapsed #sidebar.app-sidebar {
+            transform: translateX(110%) !important;
+        }
+
+        body.sidebar-collapsed #mainContent {
+            margin-right: 0 !important;
+        }
+
+        #mainContent {
+            margin-right: var(--sidebar-width) !important;
+            transition: margin-right .24s ease !important;
+        }
+
+        #notifWrapper {
+            margin-right: calc(var(--sidebar-width) + 10px) !important;
+            transition: margin-right .24s ease;
+        }
+
+        body.sidebar-collapsed #notifWrapper {
+            margin-right: 0 !important;
+        }
+
+        @@media (max-width: 991px) {
+            #sidebar.app-sidebar {
+                width: min(312px, 88vw) !important;
+                transform: translateX(110%) !important;
+            }
+
+            body.sidebar-mobile-open #sidebar.app-sidebar {
+                transform: translateX(0) !important;
+            }
+
+            body.sidebar-mobile-open .sidebar-backdrop {
+                display: block;
+            }
+
+            #mainContent {
+                margin-right: 0 !important;
+            }
+
+            #notifWrapper {
+                margin-right: 0 !important;
+            }
+        }
+    </style>
+</head>
+
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    Func<string, string, string> activeNav = (controller, action) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+        (string.IsNullOrWhiteSpace(action) || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase))
+            ? "active"
+            : string.Empty;
+
+    var displayName = User.Identity?.Name ?? "User";
+    var userInitial = string.IsNullOrWhiteSpace(displayName) ? "U" : displayName.Trim().Substring(0, 1).ToUpperInvariant();
+    var roleName = User.IsInRole("Admin") ? "Admin" : User.IsInRole("HR") ? "HR" : User.IsInRole("Employee") ? "Employee" : "User";
+}
+
+<body>
+
+    <!-- ===== Sidebar ===== -->
+    <aside id="sidebar" class="app-sidebar" aria-label="Main navigation">
+        <div class="sidebar-shell">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-mark">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <h4 class="sidebar-brand-title">EMS</h4>
+                    <div class="sidebar-brand-subtitle">Employee Management</div>
+                </div>
+            </div>
+
+            <div class="sidebar-scroll">
+                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                {
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Workspace</div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link @(activeNav("Dashboard", "Index"))" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="fa-solid fa-gauge"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(activeNav("Audit", ""))" asp-controller="Audit" asp-action="Index">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                    <span>Audit Trail</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                }
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Administration</div>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link @(activeNav("User", ""))" asp-controller="User" asp-action="Index">
+                                    <i class="fa-solid fa-users"></i>
+                                    <span>Users</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(activeNav("Roles", ""))" asp-controller="Roles" asp-action="Index">
+                                    <i class="fa-solid fa-user-shield"></i>
+                                    <span>Roles</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                }
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Operations</div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link @(activeNav("Employee", "Index"))" asp-controller="Employee" asp-action="Index">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span>Employees</span>
+                            </a>
+                        </li>
+
+                        @if (User.IsInRole("Employee"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(activeNav("Employee", "Profile"))" asp-controller="Employee" asp-action="Profile">
+                                    <i class="fa-solid fa-id-badge"></i>
+                                    <span>My Profile</span>
+                                </a>
+                            </li>
+                        }
+
+                        <li class="nav-item">
+                            <a class="nav-link @(activeNav("Attendance", ""))" asp-controller="Attendance" asp-action="Index">
+                                <i class="fa-solid fa-clock"></i>
+                                <span>Attendance</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(activeNav("Department", ""))" asp-controller="Department" asp-action="Index">
+                                <i class="fa-solid fa-building"></i>
+                                <span>Departments</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(activeNav("CompanyLocation", ""))" asp-controller="CompanyLocation" asp-action="Index">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span>Company Location</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="sidebar-user">
+                    <div class="sidebar-user-main">
+                        <div class="sidebar-avatar">@userInitial</div>
+                        <div class="min-w-0">
+                            <div class="sidebar-user-name" title="@displayName">@displayName</div>
+                            <div class="sidebar-user-role">@roleName account</div>
+                        </div>
+                    </div>
+
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="btn btn-outline-danger btn-sm sidebar-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+    <!-- ===== Main Content ===== -->
+    <div id="mainContent">
+
+        <!-- Topbar -->
+        <div class="topbar d-flex justify-content-between align-items-center">
+
+            <h5 class="m-0">@ViewBag.Title</h5>
+
+            <div class="d-flex align-items-center">
+                <!-- Notifications (bell) -->
+                <div class="position-relative me-3" id="notifWrapper">
+                    <button id="notifBell" class="btn btn-sm btn-light" style="background:transparent;color:var(--muted);border:0">
+                        <i class="fa-solid fa-bell"></i>
+                        <span id="notifCount" class="badge bg-danger" style="position:absolute;top:-6px;right:-6px;display:none;">0</span>
+                    </button>
+                    <div id="notifDropdown" class="card shadow-sm" style="position:absolute; right:0; top:36px; width:320px;">
+                        <div class="card-body p-2">
+                            <h6 class="mb-2">Notifications</h6>
+                            <ul id="notifList" class="list-unstyled mb-0" style="max-height:250px;overflow:auto"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Burger Button (Right Side Now) -->
+                <button type="button" id="sidebarToggle" class="burger-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar" aria-expanded="true">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Page Body -->
+        <div class="page-content">
+            @RenderBody()
+        </div>
+
+        <footer>
+            &copy; @DateTime.Now.Year - Employee Management System
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/motion-ui.js" asp-append-version="true"></script>
+
+    <!-- Toggle sidebar visibility on hamburger button click -->
+    <script>
+        function syncSidebarToggleIcon() {
+            const button = document.getElementById('sidebarToggle');
+            if (!button) return;
+
+            const isMobile = window.matchMedia('(max-width: 991px)').matches;
+            const isOpen = isMobile
+                ? document.body.classList.contains('sidebar-mobile-open')
+                : !document.body.classList.contains('sidebar-collapsed');
+
+            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.className = isOpen ? 'bi bi-x-lg' : 'bi bi-list';
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (sidebar && mainContent) {
+                const isMobile = window.matchMedia('(max-width: 991px)').matches;
+
+                if (isMobile) {
+                    document.body.classList.toggle('sidebar-mobile-open');
+                } else {
+                    document.body.classList.toggle('sidebar-collapsed');
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                }
+
+                syncSidebarToggleIcon();
+            }
+        }
+
+        function closeSidebar() {
+            document.body.classList.remove('sidebar-mobile-open');
+            syncSidebarToggleIcon();
+        }
+
+        window.addEventListener('resize', function () {
+            document.body.classList.remove('sidebar-mobile-open');
+            syncSidebarToggleIcon();
+        });
+
+        syncSidebarToggleIcon();
+    </script>
+
+    @RenderSection("Scripts", required: false)
+
+    <!-- Notification Details Modal -->
+    <div class="modal fade" id="notifDetailsModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title">Notification Details</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" style="max-height:60vh;overflow:auto">
+            <div>Loading...</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+

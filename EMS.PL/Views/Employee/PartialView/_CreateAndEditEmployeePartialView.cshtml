@@ -1,0 +1,156 @@
+
+@model EmployeeViewModel
+@inject IDepartmentService departmentService
+@inject EMS.DAL.Contracts.UnitOfWork.IUnitOfWork unitOfWork
+@{
+    var Departments = new SelectList(await departmentService.GetDepartmentsAsync(), "Id", nameof(DepartmentDto.Name));
+    var companyLocation = (await unitOfWork.CompanyLocationRepository.GetAllAsync()).FirstOrDefault();
+    var companyLocationName = companyLocation?.Name ?? string.Empty;
+}
+
+<style>
+    .employee-form-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .employee-field {
+        grid-column: span 6;
+    }
+
+    .employee-field-wide {
+        grid-column: span 12;
+    }
+
+    .employee-section-title {
+        grid-column: span 12;
+        color: #93c5fd;
+        font-size: .85rem;
+        font-weight: 700;
+        letter-spacing: .02em;
+        margin-top: .35rem;
+        padding-bottom: .45rem;
+        border-bottom: 1px solid rgba(148, 163, 184, .18);
+    }
+
+    .employee-form-grid .form-control,
+    .employee-form-grid .form-select {
+        min-height: 42px;
+    }
+
+    .employee-check-row {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        padding: .55rem .75rem;
+        border: 1px solid rgba(148, 163, 184, .35);
+        border-radius: .375rem;
+        background: #0b1020;
+    }
+
+    @@media (max-width: 767px) {
+        .employee-field,
+        .employee-field-wide {
+            grid-column: span 12;
+        }
+    }
+</style>
+
+<div class="employee-form-grid">
+    <div class="employee-section-title">Basic Information</div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Name" class="form-label text-light">Name</label>
+        <input asp-for="Name" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Name" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label class="form-label text-light">Company Location</label>
+        <input class="form-control bg-dark text-light border-secondary" readonly value="@companyLocationName" />
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Email" class="form-label text-light">Email</label>
+        <input asp-for="Email" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Email" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="PhoneNumber" class="form-label text-light">Phone Number</label>
+        <input asp-for="PhoneNumber" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Age" class="form-label text-light">Age</label>
+        <input asp-for="Age" type="number" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Age" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Address" class="form-label text-light">Address</label>
+        <input asp-for="Address" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Address" class="text-danger small"></span>
+    </div>
+
+    <div class="employee-section-title">Employment Details</div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Salary" class="form-label text-light">Salary</label>
+        <input asp-for="Salary" type="number" step="0.01" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Salary" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="HiringTime" class="form-label text-light">Hiring Date</label>
+        <input asp-for="HiringTime" type="date" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="HiringTime" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Gender" class="form-label d-block text-light">Gender</label>
+        <div class="employee-check-row">
+        @foreach (Gender gender in Enum.GetValues(typeof(Gender)))
+        {
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" asp-for="Gender" value="@gender" />
+                <label class="form-check-label text-light">@gender</label>
+            </div>
+        }
+        </div>
+        <span asp-validation-for="Gender" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="EmployeeType" class="form-label text-light">Employee Type</label>
+        <select asp-for="EmployeeType" asp-items="Html.GetEnumSelectList<EmployeeType>()" class="form-select bg-dark text-light border-secondary">
+            <option value="">Select Type</option>
+        </select>
+        <span asp-validation-for="EmployeeType" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="DepartmentId" class="form-label text-light">Department Name</label>
+        <select asp-for="DepartmentId" asp-items="Departments" class="form-select bg-dark text-light border-secondary">
+            <option value="">-- Select Department --</option>
+        </select>
+        <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field">
+        <label asp-for="Image" class="form-label text-light">Image</label>
+        <input asp-for="Image" class="form-control bg-dark text-light border-secondary" />
+        <span asp-validation-for="Image" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group employee-field-wide">
+        <div class="employee-check-row">
+            <input asp-for="IsMarred" class="form-check-input m-0" />
+            <label asp-for="IsMarred" class="form-check-label text-light">Married</label>
+        </div>
+        <span asp-validation-for="IsMarred" class="text-danger small"></span>
+    </div>
+</div>

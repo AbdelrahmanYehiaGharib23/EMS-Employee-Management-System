@@ -1,0 +1,115 @@
+@model EMS.PL.ViewModels.Employee.EmployeeProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card" style="background:linear-gradient(180deg,#0f1724,#071022);border:1px solid rgba(255,255,255,0.03);">
+                <div class="card-body text-light">
+                    <h4>@Model.Employee.Name</h4>
+                    <p style="color:var(--muted)">@Model.Employee.Email</p>
+                    <p><strong>Department:</strong> @Model.Employee.DepartmentName</p>
+                    <p><strong>Phone:</strong> @Model.Employee.PhoneNumber</p>
+                    <p><strong>Hire Date:</strong> @Model.Employee.HiringTime</p>
+                    <p><strong>Salary:</strong> <span style="color:var(--success)">@Model.Employee.Salary.ToString("C")</span></p>
+                    <p><strong>Company Location:</strong> @(!string.IsNullOrEmpty(Model.CompanyLocationName) ? Model.CompanyLocationName : "Not configured")</p>
+                    <a asp-controller="Employee" asp-action="Edit" asp-route-id="@Model.Employee.Id" class="btn btn-sm btn-outline-light mt-2">Edit Profile</a>
+                </div>
+            </div>
+
+            <div class="card mt-3" style="background:linear-gradient(180deg,#0f1724,#071022);border:1px solid rgba(255,255,255,0.03);">
+                <div class="card-body text-light">
+                    <h5>Behavior Flags</h5>
+                    @if (Model.Dashboard.BehaviorFlags != null && Model.Dashboard.BehaviorFlags.Any())
+                    {
+                        <ul>
+                            @foreach(var f in Model.Dashboard.BehaviorFlags)
+                            {
+                                <li style="color:var(--danger)">@f</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p style="color:var(--muted)">No flags</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card" style="background:linear-gradient(180deg,#0f1724,#071022);border:1px solid rgba(255,255,255,0.03);">
+                <div class="card-body text-light">
+                    <h4>Personal Productivity Score</h4>
+                    <div style="font-size:2.6rem;color:var(--success)">@Model.Dashboard.ProductivityScore%</div>
+                    <p style="color:var(--muted)">A simple analysis of attendance and punctuality over the last 30 days.</p>
+
+                    <hr style="border-color:rgba(255,255,255,0.03)" />
+
+                    <h5>Work Hours (Last 7 days)</h5>
+                    <canvas id="hoursChart" height="120" style="max-height:260px"></canvas>
+                    <div class="d-flex flex-column mt-3">
+                        @foreach(var d in Model.Dashboard.DailyHours)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <div style="width:140px;color:var(--muted)">@d.Date.ToString("dd MMM")</div>
+                                <div style="flex:1;background:rgba(255,255,255,0.03);height:10px;margin-right:12px;border-radius:6px;position:relative;">
+                                    <div style="height:10px;border-radius:6px;background:linear-gradient(90deg,var(--accent-light),var(--accent));width:@(Math.Min(100, (int)(d.Hours/10m*100)))%"></div>
+                                </div>
+                                <div style="width:60px;text-align:right;color:var(--accent-light)">@d.Hours.ToString("0.##")h</div>
+                            </div>
+                        }
+                    </div>
+
+                    <hr style="border-color:rgba(255,255,255,0.03)" />
+
+                    <h5>Recommendations</h5>
+                    <ul>
+                        @foreach(var r in Model.Dashboard.Recommendations)
+                        {
+                            <li style="color:var(--muted)">@r</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function(){
+            const labels = [@string.Join(",", Model.Dashboard.DailyHours.Select(d => "\"" + d.Date.ToString("dd MMM") + "\""))];
+            const data = [@string.Join(",", Model.Dashboard.DailyHours.Select(d => d.Hours.ToString(System.Globalization.CultureInfo.InvariantCulture)) )];
+
+            const ctxEl = document.getElementById('hoursChart');
+            if (ctxEl) {
+                const ctx = ctxEl.getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Hours',
+                            data: data,
+                            backgroundColor: Array(labels.length).fill(getComputedStyle(document.documentElement).getPropertyValue('--accent-light') || '#06b6d4'),
+                            borderRadius: 6,
+                            maxBarThickness: 28
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--muted') } },
+                            y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--muted') }, beginAtZero: true }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+}

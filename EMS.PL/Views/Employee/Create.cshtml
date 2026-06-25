@@ -1,0 +1,74 @@
+﻿@model EmployeeViewModel
+
+@{
+    ViewData["Title"] = "Create Employee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var formAction = (string?)ViewData["FormAction"] ?? "Create";
+}
+
+<style>
+    .employee-create-wrap {
+        max-width: 1180px;
+        margin: 2rem auto 0;
+    }
+
+    .employee-create-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .employee-create-head h3 {
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .employee-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .75rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(148, 163, 184, .16);
+    }
+
+    @@media (max-width: 767px) {
+        .employee-create-wrap {
+            margin-top: 1rem;
+        }
+
+        .employee-create-head {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .employee-create-head .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid employee-create-wrap">
+    <div class="card-panel p-4">
+        <div class="employee-create-head">
+            <h3>Create New Employee</h3>
+            <a asp-action="Index" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
+
+        <form method="post" asp-action="@formAction" asp-controller="Employee" class="needs-validation" novalidate enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <partial name="PartialView/_CreateAndEditEmployeePartialView" />
+
+            <div class="employee-actions">
+                <button type="submit" class="btn btn-create px-4">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

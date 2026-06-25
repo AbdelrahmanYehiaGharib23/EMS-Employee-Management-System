@@ -1,0 +1,62 @@
+@using EMS.PL.ViewModels.Identity
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="auth-card">
+
+    <h2 class="auth-title">Create Account</h2>
+
+    <form asp-action="Register" method="post" asp-controller="Account" class="auth-form">
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-user"></i></span>
+            <input asp-for="FirstName" placeholder="First Name" required />
+        </div>
+        <span asp-validation-for="FirstName" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-user"></i></span>
+            <input asp-for="LastName" placeholder="Last Name" required />
+        </div>
+        <span asp-validation-for="LastName" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-user-tag"></i></span>
+            <input asp-for="UserName" placeholder="User Name" required />
+        </div>
+        <span asp-validation-for="UserName" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <input asp-for="Email" placeholder="Email" required />
+        </div>
+        <span asp-validation-for="Email" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input asp-for="Password" placeholder="Password" type="password" required />
+        </div>
+        <span asp-validation-for="Password" class="field-validation-error"></span>
+
+        <div class="input-group">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input asp-for="ConfirmPassword" placeholder="Confirm Password" type="password" required />
+        </div>
+        <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+
+        <div class="checkbox-group">
+            <label>
+                <input asp-for="IsAgree" type="checkbox" required />
+                <span>I Agree To The Terms & Conditions</span>
+            </label>
+        </div>
+
+        <button type="submit" class="auth-btn">SIGN UP</button>
+    </form>
+
+    <p class="switch-form">Already have an account? <a asp-action="Login">Login Now!</a></p>
+</div>

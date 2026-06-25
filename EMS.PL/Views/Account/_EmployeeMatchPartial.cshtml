@@ -1,0 +1,31 @@
+@model EMS.BLL.Models.Dto.EmployeeDto.EmployeeDetailsDto
+
+@if (Model == null)
+{
+    <div class="alert alert-info">No matching employee record found.</div>
+}
+else
+{
+    <div id="emp-data"
+         data-name="@Model.Name"
+         data-email="@Model.Email"
+         data-phone="@Model.PhoneNumber"
+         data-dept="@Model.DepartmentName"
+         data-emptype="@Model.EmployeeType"
+         data-departmentid="@Model.DepartmentId"
+         data-age="@Model.Age"
+         data-address="@Model.Address"
+         data-salary="@Model.Salary"
+         data-gender="@Model.Gender"
+         data-hiringtime="@(Model.HiringTime.ToString())"
+         >
+        <h5>Matching employee record</h5>
+        <table class="table table-bordered">
+            <tr><th>Name</th><td>@Model.Name</td></tr>
+            <tr><th>Email</th><td>@Model.Email</td></tr>
+            <tr><th>Phone</th><td>@Model.PhoneNumber</td></tr>
+            <tr><th>Department</th><td>@Model.DepartmentName</td></tr>
+            <tr><th>Hiring Time</th><td>@(Model.HiringTime.ToString())</td></tr>
+        </table>
+    </div>
+}

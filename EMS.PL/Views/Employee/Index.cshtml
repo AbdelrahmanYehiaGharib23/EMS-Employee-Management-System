@@ -1,0 +1,120 @@
+﻿@model IEnumerable<EmployeeDto>
+
+@{
+    ViewData["Title"] = "Employees";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="content-wrapper">
+    <!-- 🔹 Header -->
+    <div class="section-header">
+        <h2 class="m-0"><i class="fa-solid fa-users me-2"></i> Employees</h2>
+        <div class="d-flex align-items-center gap-2">
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <a asp-action="Create" class="btn btn-create shadow-sm">
+                    <i class="fa-solid fa-plus me-1"></i> Add Employee
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="search-row">
+        <form asp-action="Index" method="get" class="d-flex w-100">
+            <input name="EmployeeSearchByName" class="form-control search-input" type="text" placeholder="Search Employee By Name" />
+            <button type="submit" class="btn btn-outline-success btn-search">Search</button>
+        </form>
+    </div>
+
+    <!-- 🔹 Table -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-container p-3">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-light table-dark-theme">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Salary</th>
+                            <th>Image</th>
+                            <th>Department</th>
+                            <th>Type</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int index = 1;
+                        }
+                        @foreach (var emp in Model)
+                        {
+                    <tr>
+                        <td class="fw-bold text-secondary">@index</td>
+                        <td>@emp.Name</td>
+                        <td>@emp.Email</td>
+                        <td>@emp.PhoneNumber</td>
+                        <td class="text-success fw-semibold">@emp.Salary.ToString("C")</td>
+                                <td>
+                                    @if (string.IsNullOrEmpty(emp.ImageName))
+                                    {
+                                        <img src="~/Files/Images/default-user.png"
+                                             class="rounded-circle shadow-sm"
+                                             style="width:40px; height:40px; object-fit:cover;"
+                                             alt="No Image"/>
+                                    }
+                                    else
+                                    {
+                                        <img src="~/Files/Images/@emp.ImageName"
+                                             class="rounded-circle shadow-sm"
+                                             style="width:40px; height:40px; object-fit:cover;"
+                                             alt="@emp.Name" />
+                                    }
+                                </td>
+                        <td>@(string.IsNullOrEmpty(emp.DepartmentName)?"No Department":emp.DepartmentName)</td>
+                        <td>
+                            <span class="badge bg-info">@emp.EmployeeType</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-inline-flex gap-1">
+                                <a asp-action="Details" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-light" title="View Details">
+                                    <i class="bi bi-eye text-info"></i>
+                                </a>
+                                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-light" title="Edit Employee">
+                                        <i class="bi bi-pencil-square text-warning"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-danger" title="Delete Employee">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                                        index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-custom text-center mt-4 shadow-sm rounded-4">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            No employees found.
+        </div>
+    }
+    </div>
+    </div>
+
+@section Scripts {
+    <script>
+        // removed hover shadow script to avoid layout shift when hovering/clicking rows
+        // keep any future table scripts here
+    </script>
+}

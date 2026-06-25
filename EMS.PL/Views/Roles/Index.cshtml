@@ -1,0 +1,51 @@
+﻿@model IEnumerable<RoleViewModel>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+
+
+<a asp-action="Create" class="btn btn-primary mt-3">Create New Role</a>
+
+
+
+<div class="search-row mt-2">
+    <form asp-action="Index" method="get" class="d-flex w-100">
+        <input name="name" class="form-control search-input" type="text" placeholder="Role name" />
+        <button type="submit" class="btn btn-outline-success btn-search">Search</button>
+    </form>
+</div>
+<table class="table table-hover align-middle mb-0 text-light table-dark-theme mt-3">
+    <thead>
+        <tr>
+            <td>@Html.DisplayNameFor(d => d.Id)</td>
+            <td>@Html.DisplayNameFor(d => d.Name)</td>
+
+
+            <td>Details</td>
+            <td>Edit</td>
+            <td>Delete</td>
+
+
+        </tr>
+
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+
+
+                <partial name="_ButtonsPartial" Model="@user.Id"></partial>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+

@@ -1,0 +1,305 @@
+@{
+    ViewBag.Title = "Attendance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="position:relative">
+    <div class="input-group mb-2">
+        <input type="text" id="searchBox" class="form-control"
+               placeholder="Search for a location..." autocomplete="off" />
+        <button class="btn btn-outline-secondary" id="btnSearch" type="button">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    <ul id="searchResults" class="list-group"
+        style="display:none; position:absolute; z-index:1100; width:100%; max-height:220px; overflow-y:auto;"></ul>
+</div>
+
+<div id="employeeMap" style="height:380px; border-radius:.5rem; overflow:hidden; margin-bottom:1rem"></div>
+
+<div class="container mt-4">
+    <div class="content-wrapper">
+
+        <div class="section-header">
+            <h2 class="m-0"><i class="fa-solid fa-clock me-2"></i> Attendance</h2>
+            <div class="d-flex align-items-center gap-2">
+                <button id="btnCheckIn" class="btn btn-create shadow-sm" disabled
+                        title="You must be within the company range">
+                    <span id="checkInSpinner"
+                          class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                    Check In
+                </button>
+                <button id="btnCheckOut" class="btn btn-outline-light shadow-sm">
+                    Check Out
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <div id="statusMessage" class="alert alert-secondary">No recent activity</div>
+            <div id="locationStatus" class="mt-2 fw-semibold"></div>
+            <div id="gpsAccuracy" class="text-muted small mt-1"></div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        const map = L.map('employeeMap').setView([30.0444, 31.2357], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let userMarker    = null;
+        let userCircle    = null;
+        let companyMarker = null;
+        let companyCircle = null;
+        let companyData   = null;
+        let firstFix      = true;
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R     = 6371000;
+            const toRad = x => x * Math.PI / 180;
+            const dLat  = toRad(lat2 - lat1);
+            const dLon  = toRad(lon2 - lon1);
+            const a     = Math.sin(dLat / 2) ** 2
+                        + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        async function loadCompany() {
+            try {
+                const res = await fetch('/Dashboard/GetCompanyLocation');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data) return;
+
+                companyData = data;
+
+                companyMarker = L.marker([data.latitude, data.longitude])
+                    .addTo(map)
+                    .bindPopup(`<b>${data.name || 'Company'}</b>`);
+
+                companyCircle = L.circle([data.latitude, data.longitude], {
+                    radius:      data.radius,
+                    color:       '#0d6efd',
+                    fillOpacity: 0.08,
+                    dashArray:   '6 4'
+                }).addTo(map);
+
+            } catch (e) {
+                console.error('loadCompany error', e);
+            }
+        }
+
+        function evaluateProximity(lat, lng) {
+            const statusEl = document.getElementById('locationStatus');
+            const btnIn    = document.getElementById('btnCheckIn');
+
+            if (!companyData) {
+                statusEl.textContent = '⏳ Loading company data...';
+                statusEl.className   = 'mt-2 fw-semibold text-muted';
+                btnIn.disabled       = true;
+                return;
+            }
+
+            const dist   = getDistance(lat, lng, companyData.latitude, companyData.longitude);
+            const inside = dist <= companyData.radius;
+
+            if (inside) {
+                statusEl.innerHTML = `✅ Inside company range &nbsp;<span class="text-muted fw-normal">(${Math.round(dist)} m)</span>`;
+                statusEl.className = 'mt-2 fw-semibold text-success';
+                btnIn.disabled     = false;
+                btnIn.title        = '';
+            } else {
+                statusEl.innerHTML = `❌ Outside company range &nbsp;<span class="text-muted fw-normal">(${Math.round(dist)} m — allowed: ${companyData.radius} m)</span>`;
+                statusEl.className = 'mt-2 fw-semibold text-danger';
+                btnIn.disabled     = true;
+                btnIn.title        = 'You must be within the company range';
+            }
+        }
+
+        function updateUser(lat, lng, accuracy) {
+            if (!userMarker) {
+                userMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: `<div style="width:16px;height:16px;border-radius:50%;
+                                           background:#198754;border:3px solid #fff;
+                                           box-shadow:0 0 6px rgba(0,0,0,.4)"></div>`,
+                        iconAnchor: [8, 8]
+                    })
+                }).addTo(map).bindPopup('You are here');
+            } else {
+                userMarker.setLatLng([lat, lng]);
+            }
+
+            if (accuracy) {
+                if (!userCircle) {
+                    userCircle = L.circle([lat, lng], {
+                        radius:      accuracy,
+                        color:       '#198754',
+                        fillOpacity: 0.08,
+                        weight:      1
+                    }).addTo(map);
+                } else {
+                    userCircle.setLatLng([lat, lng]).setRadius(accuracy);
+                }
+                document.getElementById('gpsAccuracy').textContent =
+                    `GPS accuracy: ±${Math.round(accuracy)} m`;
+            }
+
+            if (firstFix) {
+                map.setView([lat, lng], 15);
+                firstFix = false;
+            }
+
+            evaluateProximity(lat, lng);
+        }
+
+        function startWatch() {
+            if (!navigator.geolocation) {
+                const statusEl       = document.getElementById('locationStatus');
+                statusEl.textContent = '⚠️ Geolocation is not supported by your browser';
+                statusEl.className   = 'mt-2 fw-semibold text-warning';
+                return;
+            }
+
+            navigator.geolocation.watchPosition(
+                pos => updateUser(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+                ()  => {
+                    const statusEl       = document.getElementById('locationStatus');
+                    statusEl.textContent = '⚠️ Unable to retrieve your location — please allow location access';
+                    statusEl.className   = 'mt-2 fw-semibold text-warning';
+                },
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+            );
+        }
+
+        const searchBox     = document.getElementById('searchBox');
+        const searchResults = document.getElementById('searchResults');
+        let debounce        = null;
+
+        searchBox.addEventListener('input', function () {
+            clearTimeout(debounce);
+            const q = this.value.trim();
+            if (q.length < 3) { hideSearch(); return; }
+            debounce = setTimeout(() => fetchSuggestions(q), 400);
+        });
+
+        searchBox.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(debounce);
+                fetchSuggestions(searchBox.value.trim());
+            }
+        });
+
+        document.getElementById('btnSearch').addEventListener('click', () =>
+            fetchSuggestions(searchBox.value.trim()));
+
+        async function fetchSuggestions(q) {
+            if (q.length < 3) return;
+            try {
+                const res  = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&limit=6&addressdetails=1&q=${encodeURIComponent(q)}`,
+                    { headers: { 'Accept-Language': 'en' } }
+                );
+                const data = await res.json();
+                renderSearch(data);
+            } catch {
+                hideSearch();
+            }
+        }
+
+        function renderSearch(items) {
+            searchResults.innerHTML = '';
+
+            if (!items.length) {
+                searchResults.innerHTML = '<li class="list-group-item text-muted">No results found</li>';
+                searchResults.style.display = 'block';
+                return;
+            }
+
+            items.forEach(item => {
+                const li       = document.createElement('li');
+                li.className   = 'list-group-item list-group-item-action';
+                li.style.cursor = 'pointer';
+                li.textContent  = item.display_name;
+
+                li.addEventListener('click', () => {
+                    map.setView([parseFloat(item.lat), parseFloat(item.lon)], 15);
+                    searchBox.value = item.display_name;
+                    hideSearch();
+                });
+
+                searchResults.appendChild(li);
+            });
+
+            searchResults.style.display = 'block';
+        }
+
+        function hideSearch() {
+            searchResults.style.display = 'none';
+            searchResults.innerHTML     = '';
+        }
+
+        document.addEventListener('click', e => {
+            if (!searchResults.contains(e.target) && e.target !== searchBox) hideSearch();
+        });
+
+        const btnIn    = document.getElementById('btnCheckIn');
+        const btnOut   = document.getElementById('btnCheckOut');
+        const statusEl = document.getElementById('statusMessage');
+        const spinner  = document.getElementById('checkInSpinner');
+
+        btnIn.addEventListener('click', function () {
+            navigator.geolocation.getCurrentPosition(async pos => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+
+                if (companyData) {
+                    const dist = getDistance(lat, lon, companyData.latitude, companyData.longitude);
+                    if (dist > companyData.radius) {
+                        statusEl.className   = 'alert alert-danger';
+                        statusEl.textContent = '❌ You are outside the company range.';
+                        return;
+                    }
+                }
+
+                btnIn.disabled = true;
+                spinner.classList.remove('d-none');
+
+                try {
+                    const res  = await fetch('/Attendance/CheckIn', {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body:    JSON.stringify({ latitude: lat, longitude: lon })
+                    });
+                    const data = await res.json();
+                    statusEl.className   = res.ok ? 'alert alert-success' : 'alert alert-danger';
+                    statusEl.textContent = data.message;
+                } finally {
+                    spinner.classList.add('d-none');
+                }
+
+            }, () => {
+                statusEl.className   = 'alert alert-warning';
+                statusEl.textContent = '⚠️ Could not get your current location.';
+            }, { enableHighAccuracy: true, timeout: 10000 });
+        });
+
+        btnOut.addEventListener('click', async function () {
+            const res  = await fetch('/Attendance/CheckOut', { method: 'POST' });
+            const data = await res.json();
+            statusEl.className   = res.ok ? 'alert alert-success' : 'alert alert-danger';
+            statusEl.textContent = data.message;
+        });
+
+        loadCompany().then(() => startWatch());
+    </script>
+}

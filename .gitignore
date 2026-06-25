@@ -8,3 +8,4 @@ obj/
 *.user
 serviceDependencies.local.json
 serviceDependencies.local.json.user
+appsettings.Development.json

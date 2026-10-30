@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EMS.BLL", "EMS.BLL\EMS.BLL.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EMS.DAL", "EMS.DAL\EMS.DAL.csproj", "{A72E69AF-9E94-4F87-8180-51FDE6E6D762}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EMS.Tests", "EMS.Tests\EMS.Tests.csproj", "{D32BD1FE-0587-40A7-960E-339FEAF07C8A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A72E69AF-9E94-4F87-8180-51FDE6E6D762}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A72E69AF-9E94-4F87-8180-51FDE6E6D762}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A72E69AF-9E94-4F87-8180-51FDE6E6D762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D32BD1FE-0587-40A7-960E-339FEAF07C8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D32BD1FE-0587-40A7-960E-339FEAF07C8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D32BD1FE-0587-40A7-960E-339FEAF07C8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D32BD1FE-0587-40A7-960E-339FEAF07C8A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -18,7 +18,7 @@ namespace EMS.BLL.Services.DepartmentServices
         {
             _UnitOfWork = unitOfWork;
         }
-        public async System.Threading.Tasks.Task<DepartmentDetailsDto?> GetDepartmentByIdAsync(int id)
+        public async Task<DepartmentDetailsDto?> GetDepartmentByIdAsync(int id)
         {
             var department = await _UnitOfWork.DepartmentRepository.GetByIdAsync(id);
             if (department is null)
@@ -38,12 +38,12 @@ namespace EMS.BLL.Services.DepartmentServices
             };
             return departmentDetailsDto;
         }
-        public async System.Threading.Tasks.Task<IEnumerable<DepartmentDto>> GetDepartmentsAsync()
+        public async Task<IEnumerable<DepartmentDto>> GetDepartmentsAsync()
         {
             var departments = await _UnitOfWork.DepartmentRepository.GetAllAsync();
             return departments.Select(department => new DepartmentDto(department.Id, department.Code, department.Name, department.Description, department.DateOfCreation)).ToList();
         }
-        public async System.Threading.Tasks.Task<int> CreateDepartmentAsync(CreateDepartmentDto department)
+        public async Task<int> CreateDepartmentAsync(CreateDepartmentDto department)
         {
             var departmentToCreate = new Department
             {
@@ -56,7 +56,7 @@ namespace EMS.BLL.Services.DepartmentServices
             return await _UnitOfWork.CompleteAsync();
 
         }
-        public async System.Threading.Tasks.Task<int> UpdateDepartmentAsync(UpdateDepartmentDto department)
+        public async Task<int> UpdateDepartmentAsync(UpdateDepartmentDto department)
         {
             var departmentToUpdate = new Department
             {
@@ -70,7 +70,7 @@ namespace EMS.BLL.Services.DepartmentServices
             return await _UnitOfWork.CompleteAsync();
         }
 
-        public async System.Threading.Tasks.Task<bool> DeleteDepartmentAsync(int? id)
+        public async Task<bool> DeleteDepartmentAsync(int? id)
         {
             if (id == null) return false;
 

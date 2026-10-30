@@ -18,7 +18,7 @@ namespace EMS.DAL.Persistence.Repositories.Identity
         {
             _context = context;
         }
-        // إضافة Token جديد
+        // Add new token
         public Task AddTokenAsync(PasswordResetTokens token)
         {
             _context.PasswordResetTokens.Add(token);
@@ -37,7 +37,7 @@ namespace EMS.DAL.Persistence.Repositories.Identity
             }
         }
 
-        // الحصول على OTP صالح للتحقق
+        // Check OTP
         public async Task<PasswordResetTokens?> GetValidOtpTokenAsync(string userId, string otpHash)
         {
             return await _context.PasswordResetTokens
@@ -47,7 +47,7 @@ namespace EMS.DAL.Persistence.Repositories.Identity
                                           && x.ExpiresAt > DateTime.UtcNow);
         }
 
-        // الحصول على Reset Token صالح
+        // Reset Token
         public async Task<PasswordResetTokens?> GetValidResetTokenAsync(string tokenHash)
         {
             return await _context.PasswordResetTokens

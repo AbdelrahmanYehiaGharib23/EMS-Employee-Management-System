@@ -5,7 +5,6 @@ using EMS.BLL.Services.DepartmentServices;
 using EMS.BLL.Services.EmployeeServices;
 using EMS.DAL.Entities.EmployeeEntity;
 using EMS.DAL.Entities.Shared.Enums;
-using EMS.PL.ViewModels.Department;
 using EMS.PL.ViewModels.Employee;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +12,10 @@ using Microsoft.AspNetCore.Identity;
 using EMS.DAL.Entities.IdentityModel;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using EMS.DAL.Contracts.UnitOfWork;
+using EMS.BLL.Services.Notification;
+using EMS.BLL.Services.Identity;
+using EMS.DAL.Entities.Requests;
 
 namespace EMS.PL.Controllers
 {
@@ -24,16 +27,16 @@ namespace EMS.PL.Controllers
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly EMS.BLL.Services.Notification.INotificationService _notificationService;
-        private readonly EMS.BLL.Services.Identity.IEmailSender _emailSender;
-        private readonly EMS.DAL.Contracts.UnitOfWork.IUnitOfWork _unitOfWork;
+        private readonly INotificationService _notificationService;
+        private readonly IEmailSender _emailSender;
+        private readonly IUnitOfWork _unitOfWork;
 
         public EmployeeController(
             IEmployeeService employeeService, ILogger<EmployeeController> logger, IWebHostEnvironment environment, IMapper mapper,
             UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
-            EMS.DAL.Contracts.UnitOfWork.IUnitOfWork unitOfWork,
-            EMS.BLL.Services.Notification.INotificationService notificationService,
-            EMS.BLL.Services.Identity.IEmailSender emailSender)
+            IUnitOfWork unitOfWork,
+            INotificationService notificationService,
+            IEmailSender emailSender)
         {
             _employeeService = employeeService;
             _logger = logger;
@@ -47,7 +50,7 @@ namespace EMS.PL.Controllers
         }
 
         [HttpGet]
-        public async System.Threading.Tasks.Task<IActionResult> Index(string? employeeSearchByName)
+        public async Task<IActionResult> Index(string? employeeSearchByName)
         {
             var employees = await _employeeService.GetEmployeesAsync(employeeSearchByName);
             return View(employees);
@@ -55,7 +58,7 @@ namespace EMS.PL.Controllers
 
         [HttpGet]
         [Authorize]
-        public async System.Threading.Tasks.Task<IActionResult> Profile()
+        public async Task<IActionResult> Profile()
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
@@ -148,7 +151,7 @@ namespace EMS.PL.Controllers
 
             try
             {
-                var req = new EMS.DAL.Entities.Requests.EmployeeProfileRequest
+                var req = new EmployeeProfileRequest
                 {
                     Name = name ?? string.Empty,
                     Email = email,
@@ -263,7 +266,7 @@ namespace EMS.PL.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin,HR")]
         [ValidateAntiForgeryToken]
-        public async System.Threading.Tasks.Task<IActionResult> Create(EmployeeViewModel employeeViewModel)
+        public async Task<IActionResult> Create(EmployeeViewModel employeeViewModel)
         {
             if (ModelState.IsValid)
             {
@@ -389,7 +392,7 @@ namespace EMS.PL.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,HR")]
-        public async System.Threading.Tasks.Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (!id.HasValue) return BadRequest();
             var employee = await _employeeService.GetEmployeeByIdAsync(id.Value);

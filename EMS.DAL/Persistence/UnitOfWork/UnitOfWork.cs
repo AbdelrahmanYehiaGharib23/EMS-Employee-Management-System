@@ -52,7 +52,7 @@ namespace EMS.DAL.Persistence.UnitOfWork
             return _dbContext.SaveChanges();
         }
 
-        public async System.Threading.Tasks.Task<int> CompleteAsync()
+        public async Task<int> CompleteAsync()
         {
             return await _dbContext.SaveChangesAsync();
         }

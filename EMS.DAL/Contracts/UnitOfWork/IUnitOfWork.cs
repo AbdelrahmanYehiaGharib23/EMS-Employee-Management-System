@@ -20,7 +20,7 @@ namespace EMS.DAL.Contracts.UnitOfWork
         public IEmployeeProfileRequestRepository EmployeeProfileRequestRepository { get; }
         public IAuditLogRepository AuditLogRepository { get; }
         int Complete();
-        System.Threading.Tasks.Task<int> CompleteAsync();
+        Task<int> CompleteAsync();
         //void Dispose();
     }
 }

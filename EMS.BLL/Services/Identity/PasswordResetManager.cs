@@ -23,7 +23,7 @@ namespace EMS.BLL.Services.Identity
             _emailSender = emailSender;
         }
 
-        // إرسال OTP
+        // Send OTP
         public async Task SendOtpAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);

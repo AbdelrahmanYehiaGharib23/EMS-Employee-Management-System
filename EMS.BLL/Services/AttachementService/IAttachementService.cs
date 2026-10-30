@@ -9,7 +9,7 @@ namespace EMS.BLL.Services.AttachementService
 {
     public interface IAttachementService
     {
-        public System.Threading.Tasks.Task<string?> UploadAsync(Microsoft.AspNetCore.Http.IFormFile file, string folderName);
-        public System.Threading.Tasks.Task<bool> DeleteAsync(string filePath);
+        public Task<string?> UploadAsync(IFormFile file, string folderName);
+        public Task<bool> DeleteAsync(string filePath);
     }
 }

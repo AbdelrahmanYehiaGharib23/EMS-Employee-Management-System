@@ -12,7 +12,7 @@ namespace EMS.BLL.Services.AttachementService
         private static readonly List<string> allowedExtensions = new List<string> { ".png", ".jpg", ".jpeg" };
         private const int maxSize = 2_097_152; //2*1024*1024
 
-        public async System.Threading.Tasks.Task<string?> UploadAsync(Microsoft.AspNetCore.Http.IFormFile file, string folderName)
+        public async Task<string?> UploadAsync(IFormFile file, string folderName)
         {
             var extension = Path.GetExtension(file.FileName);
             if (!allowedExtensions.Contains(extension)) return null;
@@ -28,7 +28,7 @@ namespace EMS.BLL.Services.AttachementService
             return fileName;
         }
 
-        public async System.Threading.Tasks.Task<bool> DeleteAsync(string filePath)
+        public async Task<bool> DeleteAsync(string filePath)
         {
             try
             {

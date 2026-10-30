@@ -11,6 +11,8 @@ using EMS.BLL.Models.Dto.EmployeeDto;
 using EMS.DAL.Entities.Requests;
 using EMS.DAL.Persistence.Data.DbInitializer;
 using EMS.BLL.Services.AttachementService;
+using EMS.DAL.Contracts.UnitOfWork;
+using EMS.BLL.Services.Notification;
 
 namespace EMS.PL.Controllers.IdentityController
 {
@@ -21,9 +23,9 @@ namespace EMS.PL.Controllers.IdentityController
         private readonly IPasswordResetManager _passwordResetManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmployeeService _employeeService;
-        private readonly EMS.DAL.Contracts.UnitOfWork.IUnitOfWork _unitOfWork;
-        private readonly EMS.BLL.Services.Notification.INotificationService _notificationService;
-        private readonly EMS.BLL.Services.Identity.IEmailSender _emailSender;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly INotificationService _notificationService;
+        private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<AccountController> _logger;
         private readonly IConfiguration _configuration;
@@ -36,9 +38,9 @@ namespace EMS.PL.Controllers.IdentityController
             IPasswordResetManager passwordResetManager,
             RoleManager<IdentityRole> roleManager,
             IEmployeeService employeeService,
-            EMS.DAL.Contracts.UnitOfWork.IUnitOfWork unitOfWork,
-            EMS.BLL.Services.Notification.INotificationService notificationService,
-            EMS.BLL.Services.Identity.IEmailSender emailSender,
+            IUnitOfWork unitOfWork,
+            INotificationService notificationService,
+            IEmailSender emailSender,
             ApplicationDbContext dbContext,
             ILogger<AccountController> logger,
             IConfiguration configuration,

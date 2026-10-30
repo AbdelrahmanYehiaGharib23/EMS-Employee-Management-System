@@ -17,25 +17,7 @@ namespace EMS.DAL.Persistence.Repositories
             _dbContext = dbContext;
         }
 
-        public int Count()
-        {
-            return _dbContext.Set<TEntity>().Count();
-        }
 
-        public async System.Threading.Tasks.Task<int> CountAsync()
-        {
-            return await _dbContext.Set<TEntity>().CountAsync();
-        }
-
-        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
-        {
-            return _dbContext.Set<TEntity>().Where(predicate).ToList();
-        }
-
-        public async System.Threading.Tasks.Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await _dbContext.Set<TEntity>().Where(predicate).ToListAsync();
-        }
 
         public IEnumerable<TEntity> GetAll(bool withTracking = false)
         {
@@ -45,7 +27,7 @@ namespace EMS.DAL.Persistence.Repositories
                 return _dbContext.Set<TEntity>().Where(E => E.IsDeleted != true).AsNoTracking().ToList();
         }
 
-        public async System.Threading.Tasks.Task<IEnumerable<TEntity>> GetAllAsync(bool withTracking = false)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(bool withTracking = false)
         {
             if (withTracking)
                 return await _dbContext.Set<TEntity>().Where(E => E.IsDeleted != true).ToListAsync();
@@ -58,14 +40,14 @@ namespace EMS.DAL.Persistence.Repositories
             return _dbContext.Set<TEntity>().Where(predicate).ToList();
         }
 
-        public async System.Threading.Tasks.Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbContext.Set<TEntity>().Where(predicate).ToListAsync();
         }
 
         public TEntity? GetById(int id) => _dbContext.Set<TEntity>().Find(id);
 
-        public async System.Threading.Tasks.Task<TEntity?> GetByIdAsync(int id) => 
+        public async Task<TEntity?> GetByIdAsync(int id) =>
             await _dbContext.Set<TEntity>().FindAsync(id);
 
         public void Update(TEntity entity)
@@ -106,6 +88,25 @@ namespace EMS.DAL.Persistence.Repositories
         public void AddRange(IEnumerable<TEntity> entities)
         {
             _dbContext.Set<TEntity>().AddRange(entities);
+        }
+        public int Count()
+        {
+            return _dbContext.Set<TEntity>().Count();
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return await _dbContext.Set<TEntity>().CountAsync();
+        }
+
+        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+        {
+            return _dbContext.Set<TEntity>().Where(predicate).ToList();
+        }
+
+        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dbContext.Set<TEntity>().Where(predicate).ToListAsync();
         }
     }
 }

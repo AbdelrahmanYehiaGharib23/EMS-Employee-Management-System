@@ -20,7 +20,7 @@ namespace EMS.PL.Controllers
         }
 
         [HttpGet]
-        public async System.Threading.Tasks.Task<IActionResult> Index()
+        public async Task<IActionResult> Index()
         {
             var departments = await _departmentService.GetDepartmentsAsync();
             return View(departments);
@@ -33,7 +33,7 @@ namespace EMS.PL.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin,HR")]
         [ValidateAntiForgeryToken]
-        public async System.Threading.Tasks.Task<IActionResult> Create(DepartmentViewModel departmentViewModel)
+        public async Task<IActionResult> Create(DepartmentViewModel departmentViewModel)
         {
             if (ModelState.IsValid)
             {
@@ -65,7 +65,7 @@ namespace EMS.PL.Controllers
         }
 
         [HttpGet]
-        public async System.Threading.Tasks.Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (!id.HasValue) return BadRequest();
             var department = await _departmentService.GetDepartmentByIdAsync(id.Value);
@@ -75,7 +75,7 @@ namespace EMS.PL.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,HR")]
-        public async System.Threading.Tasks.Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (!id.HasValue) return BadRequest();
             var department = await _departmentService.GetDepartmentByIdAsync(id.Value);
@@ -94,7 +94,7 @@ namespace EMS.PL.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin,HR")]
         [ValidateAntiForgeryToken]
-        public async System.Threading.Tasks.Task<IActionResult> Edit([FromRoute] int id, DepartmentViewModel viewModel)
+        public async Task<IActionResult> Edit([FromRoute] int id, DepartmentViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -128,7 +128,7 @@ namespace EMS.PL.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,HR")]
-        public async System.Threading.Tasks.Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (!id.HasValue) return BadRequest();
             var department = await _departmentService.GetDepartmentByIdAsync(id.Value);
@@ -139,7 +139,7 @@ namespace EMS.PL.Controllers
         [HttpPost, ActionName("Delete")]
         [Authorize(Roles = "Admin,HR")]
         [ValidateAntiForgeryToken]
-        public async System.Threading.Tasks.Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (id == 0) return BadRequest();
 

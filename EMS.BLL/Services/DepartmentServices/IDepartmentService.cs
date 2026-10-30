@@ -5,10 +5,10 @@ namespace EMS.BLL.Services.DepartmentServices
 {
     public interface IDepartmentService
     {
-        System.Threading.Tasks.Task<IEnumerable<DepartmentDto>> GetDepartmentsAsync();
-        System.Threading.Tasks.Task<DepartmentDetailsDto?> GetDepartmentByIdAsync(int id);
-        System.Threading.Tasks.Task<int> CreateDepartmentAsync(CreateDepartmentDto department);
-        System.Threading.Tasks.Task<int> UpdateDepartmentAsync(UpdateDepartmentDto department);
-        System.Threading.Tasks.Task<bool> DeleteDepartmentAsync(int? id);
+        Task<IEnumerable<DepartmentDto>> GetDepartmentsAsync();
+        Task<DepartmentDetailsDto?> GetDepartmentByIdAsync(int id);
+        Task<int> CreateDepartmentAsync(CreateDepartmentDto department);
+        Task<int> UpdateDepartmentAsync(UpdateDepartmentDto department);
+        Task<bool> DeleteDepartmentAsync(int? id);
     }
 }

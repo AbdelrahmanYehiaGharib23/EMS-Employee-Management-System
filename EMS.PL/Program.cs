@@ -23,7 +23,7 @@ namespace EMS.PL
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -132,6 +132,7 @@ namespace EMS.PL
             }
 
             app.InitializeDatabase();
+            await app.SeedBootstrapAdminAsync();
 
             // Configure HTTP request pipeline
             if (!app.Environment.IsDevelopment())

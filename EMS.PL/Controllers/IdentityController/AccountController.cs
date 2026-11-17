@@ -383,7 +383,10 @@ namespace EMS.PL.Controllers.IdentityController
                     {
                         var roles = await _userManager.GetRolesAsync(appUser);
                         ViewBag.Roles = roles;
-                        if (roles != null && roles.Contains("Employee"))
+                        // An account without an employee record has no role yet and is
+                        // waiting for HR approval. Send it to the employee onboarding
+                        // screen instead of showing a misleading access-denied page.
+                        if (roles == null || !roles.Any() || roles.Contains("Employee"))
                         {
                             return RedirectToAction("Profile", "Employee");
                         }
@@ -481,6 +484,11 @@ namespace EMS.PL.Controllers.IdentityController
                 // re-evaluate roles after any potential refresh
                 var roles = await _userManager.GetRolesAsync(user);
 
+                // Newly registered users have no role until HR approves their profile.
+                // Keep them out of the Admin/HR dashboard and show their onboarding status.
+                if (roles == null || !roles.Any())
+                    return RedirectToAction("Profile", "Employee");
+
                 // if a returnUrl was provided ensure it's local
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
@@ -503,8 +511,8 @@ namespace EMS.PL.Controllers.IdentityController
                         return RedirectToAction("Profile", "Employee");
                 }
 
-                // fallback
-                return RedirectToAction("Index", "Dashboard");
+                // Users with a non-privileged role should land on their employee profile.
+                return RedirectToAction("Profile", "Employee");
             }
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
